@@ -1,0 +1,9 @@
+DEL: delete-char
+M-RUBOUT: backward-kill-word
+
+set meta-flag on
+set convert-meta off
+set input-meta on
+set output-meta on
+
+set enable-bracketed-paste on

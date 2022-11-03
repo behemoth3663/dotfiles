@@ -1,0 +1,182 @@
+# $FreeBSD: src/share/skel/dot.shrc,v 1.2 1999/08/28 00:21:54 peter Exp $
+#
+# .shrc - bourne shell startup file
+#
+# This file will be used if the shell is invoked for interactive use and
+# the environment variable ENV is set to this file.
+#
+# see also sh(1), environ(7).
+#
+
+echo '.shrc' >&2
+
+# Uncomment next line to enable the builtin emacs(1) command line editor
+# in sh(1), e.g. C-a -> beginning-of-line.
+set -o emacs
+
+# some useful aliases
+alias h='fc -l'
+alias i='/usr/bin/grep --extended-regexp --ignore-case --color=auto'
+alias j='jobs'
+alias m='/usr/bin/less --no-init --chop-long-lines --RAW-CONTROL-CHARS'
+
+alias ..='cd ..'
+alias cd..='cd ..'
+alias n32='/usr/bin/nice -n32'
+
+alias pi='/sbin/ping'
+alias trace='/usr/sbin/traceroute -q1 -n'
+
+if [ "${OSTYPE}" != "${OSTYPE#freebsd}" ]; then
+	PREFIX='/usr/local'
+	GIT="${PREFIX}/bin/git"
+	CURL="${PREFIX}/bin/curl"
+
+	test -x "${PREFIX}/bin/doas" && alias sudo="${PREFIX}/bin/doas"
+
+	alias cdd="cd /usr/${HOME}/src"
+
+	alias gdb='/usr/libexec/gdb'
+	alias ss='/usr/bin/sockstat'
+	alias sd="sudo ${PREFIX}/bin/deco"
+	alias t="${PREFIX}/bin/terraform"
+	alias k='kubectl'
+
+	alias pkg_ver="${PREFIX}/sbin/pkg-static version -vL= | /usr/bin/grep --extended-regex --invert-match '[[:space:]]>[[:space:]]|[[:space:]]orphaned[:[:space:]]+local/' | /usr/bin/less --no-init --quit-if-one-screen"
+	alias pkg_vers="${PREFIX}/sbin/pkg-static version -vL= | /usr/bin/less --no-init --quit-if-one-screen"
+	alias portver="/usr/sbin/portsnap fetch update && ${PREFIX}/sbin/pkg-static version -vL= | /usr/bin/grep --extended-regex --invert-match '[[:space:]]>[[:space:]]|[[:space:]]orphaned[:[:space:]]+local/'"
+	alias portupg="/usr/bin/nice -n32 ${PREFIX}/sbin/portmaster --no-confirm --no-term-title -Bdgty -x doas -x sudo"
+	alias port_extract='test "${PWD##/usr/ports/*/}" != "${PWD}" && /bin/rm -rf -- Makefile.local && pkg_origin=$(/usr/bin/make -V PKGORIGIN) && test -n "${pkg_origin}" && pkg_pwd="${PWD}" && cd .. && '"${PREFIX}"'/bin/doas /bin/rm -rf -- "${pkg_pwd##*/}" && /usr/sbin/portsnap extract "${pkg_origin}/" && cd "${pkg_pwd}"'
+
+	alias mkadl='/usr/bin/nice -n32 /usr/bin/make all-depends-list'
+	alias mkcfg="${PREFIX}/bin/doas /usr/bin/make config"
+	alias mkcfgr="/usr/bin/nice -n32 ${PREFIX}/bin/doas /usr/bin/make config-recursive"
+	#alias mkcal='(exec 4>&1 && exit $({ { /usr/bin/time /usr/bin/nice -n32 /usr/bin/make clean all 2>&1; echo $? 1>&3; } | /usr/bin/tee build.log 1>&4 2>&1; } 3>&1))'
+	alias mkcal="{ WRKDIR=\$(/usr/bin/make -V WRKDIR) && test -d \"\${WRKDIR}\" && /usr/bin/nice -n32 ${PREFIX}/bin/doas /usr/bin/find \"\${WRKDIR}\" -mindepth 2 -maxdepth 2 -name '.*' -uid 0 -exec /usr/sbin/chown -v \$(/usr/bin/id -u) {} \+ && /usr/bin/nice -n32 ${PREFIX}/bin/doas /bin/rm -rf -- \"\${WRKDIR}/pkg\" \"\${WRKDIR}/.metadir\"; set -o pipefail && /usr/bin/time /usr/bin/nice -n32 /usr/bin/make clean all 2>&1 | /usr/bin/tee build.log; }"
+	alias instpc="/usr/bin/nice -n32 ${PREFIX}/bin/doas /usr/bin/make package deinstall install clean"
+	alias zfsget='/sbin/zfs get mountpoint,canmount,mounted,checksum,compression,compressratio,dedup,atime,devices,exec,setuid,xattr,readonly,primarycache,secondarycache,logbias,sync,volsize,volblocksize'
+	alias kldsize='echo $(($(kldstat | sed -rn "s/^[[:space:]]*[[:digit:]].*[[:space:]]([[:xdigit:]]+)[[:space:]]+[^[:space:]]+[[:space:]]*\$/+0x\1/p")))'
+	alias tmux="${PREFIX}/bin/tmux attach || ${PREFIX}/bin/tmux new"
+	alias sh_='exec /bin/sh'
+
+	alias mk_venv='python -m venv env --system-site-packages --symlinks --prompt "\[\033[1;33m\]${PWD##*/}\[\033[0m\]" && source env/bin/activate && pip install --upgrade --quiet --progress-bar off pip setuptools'
+	alias mk_venv3.9='python3.9 -m venv env --prompt "\[\033[1;32m\]${PWD##*/}\[\033[0m\]" && source env/bin/activate'
+	alias activate='test -s env/bin/activate && . env/bin/activate'
+	alias pip_upgrade="test -z \"\${VIRTUAL_ENV}\" || pip list --outdated --format=freeze | sed -rn -e '/^(-e|evdev|spyder|isort|lazy-object-proxy)/d' -e 's/=.*//p' | xargs pip install --upgrade"
+	alias pip_upgrade_list="test -z \"\${VIRTUAL_ENV}\" || pip list --outdated --format=freeze | sed -rn -e '/^-e/d'"
+
+	#alias jmail="${PREFIX}/bin/doas /usr/sbin/jexec mail /usr/bin/su -l ${USER}"
+	#alias hast1="${PREFIX}/bin/doas /sbin/hastctl status -c /etc/hast1.conf"
+	#alias hast2="${PREFIX}/bin/doas /sbin/hastctl status -c /etc/hast2.conf"
+
+else
+	PREFIX='/opt/homebrew'
+	GIT='/usr/bin/git'
+	CURL='/usr/bin/curl'
+
+	alias cdd="cd ${HOME}/src"
+	alias t='/opt/homebrew/bin/terraform'
+	alias k='/opt/homebrew/bin/kubectl'
+fi
+
+#alias l='/bin/ls -lGp'
+alias l="${PREFIX}/bin/exa --long --group-directories-first --bytes"
+
+alias weather="${CURL} http://wttr.in/Vyshhorod"
+
+alias giadd="${GIT} add"
+alias gibra="${GIT} branch --show-current"
+alias gibras="/usr/bin/env GIT_PAGER='${GIT_PAGER:-${PAGER:-/usr/bin/less}} --quit-if-one-screen' ${GIT} branch --verbose --all"
+alias giche="${GIT} checkout"
+alias gichema="${GIT}"' checkout $('"${GIT}"' branch --remotes --list "origin/ma*" | sed -rn "s,^[[:space:]]*origin/(master|main)$,\1,p;q")'
+alias gicam="${GIT} commit --verbose --all --message"
+alias gigog="${GIT}"' log --graph --abbrev-commit --decorate --all --format=format:"%C(bold blue)%H%C(reset) - %C(bold cyan)%aD%C(dim white) - %an%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n %C(white)%s%C(reset)"'
+alias gilog="${GIT}"' log --graph --pretty=format:"%C(bold blue)%h%C(dim white) [%C(bold cyan)%ai%C(dim white)] <%C(bold green)%ae%C(dim white)>%C(bold yellow)%d%C(reset) %s"'
+#alias gilog='${GIT} log --graph --pretty=format:"%C(bold blue)%h%C(dim white) [%C(bold cyan)%ai%C(dim white)] <%C(bold green)%ae%C(dim white)>%C(reset) %s"'
+#alias gilog='${GIT} log --graph --pretty=format:"%h [%ai] <%ae> %s"'
+#log --graph --pretty=format:'%Cred%h %C(green)%t %Creset %C(red)%ad %Creset-%C(yellow)%d%Creset %s %n      %N %-GG' --date=short
+alias gils="${GIT} ls-files"
+alias girebi="${GIT} rebase -i"
+alias girebi2="${GIT} rebase -i HEAD~2"
+alias gista="${GIT} status --short --branch --untracked-files=no"
+alias gdiff="${GIT} diff"
+alias gfetch="${GIT} fetch --verbose --all --append --prune"
+alias gpull="${GIT} pull --verbose --all"
+alias gpush="${GIT} push origin --verbose --all --set-upstream --follow-tags"
+alias gpushtag="${GIT} push origin --verbose --tags"
+#--set-upstream?
+alias gpullbra="${GIT}"' pull --verbose origin $('"${GIT}"' branch --show-current)'
+alias gpushbra="${GIT}"' push --verbose --follow-tags origin $('"${GIT}"' branch --show-current)'
+alias girem="${GIT} remote --verbose"
+alias giremshow="${GIT} remote --verbose show origin"
+alias gitags="${GIT} ls-remote --tags origin"
+
+md() {
+	test -n "${1}" || ! echo "${PWD}" || return 1
+	/bin/mkdir -p "${1}" && cd "${1}"
+}
+
+cdiff() {
+	test -z "${1}" || "${PREFIX}/bin/colordiff" -duw ${*} | /usr/bin/less --no-init --chop-long-lines --RAW-CONTROL-CHARS
+}
+
+pdiff() {
+	# можно дополнить поиском *.orig в текущей директории при пустом ${1}
+	test -n "${1}" || return 1
+
+	local from to args='-udp'
+	while [ -n "${1}" ]; do
+		args="${args}${from:+ }${from}"
+		from="${to}"
+		to="${1}"
+		shift
+	done
+
+	test -n "${from}" || from="${to}.orig"
+
+	/usr/bin/env TZ=UTC /usr/bin/diff ${args} ${from} ${to} | /usr/bin/sed -e '/^---/s|\.[0-9]* +0000$| UTC|' -e '/^+++/s|\([[:blank:]][-0-9:.+]*\)*$||'
+}
+
+gibradel() {
+	test -n "${1}" || return 1
+	${GIT} branch --delete --force "${1}" || return 2
+	${GIT} push origin --delete "${1}"
+}
+
+pkg_ls_bin() {
+	# можно дополнить автоматическим определением директории порта по /usr/ports/* при пустом ${1}
+	local pkgs
+	test -n "${1}" && pkgs=$(${PREFIX}/sbin/pkg-static query '%n' ${*}) && test -n "${pkgs}" || return 1
+	/usr/bin/env LC_TIME='en_US.UTF-8' /bin/ls -lSG $(${PREFIX}/sbin/pkg-static query '%Fp' ${pkgs} | /usr/bin/xargs /usr/bin/file | /usr/bin/sed -rn 's/([^:]+):[[:space:]]+ELF[[:space:]].*/\1/p') #'
+}
+
+#alias ll='/bin/ls -laGTop'
+ll() {
+	"${PREFIX}/bin/exa" --all --long --group-directories-first --bytes --links --time-style long-iso --color always ${*} |
+		/usr/bin/less --no-init --chop-long-lines --RAW-CONTROL-CHARS --quit-if-one-screen
+}
+
+i() {
+	/usr/bin/grep --extended-regexp --ignore-case --color=always ${*} |
+		/usr/bin/less --no-init --chop-long-lines --RAW-CONTROL-CHARS --quit-if-one-screen
+}
+
+unset CURL
+
+#git log --name-only?
+#portver() {
+#	local o origins old_pwd="${PWD}"
+#	cd /usr/ports || return 1
+#	origins=$(${GIT} pull origin main | /usr/bin/sed -rn 's,^[[:space:]]+([^[:space:]/]+/[^[:space:]/]+).*,\1,p' | /usr/bin/sort -u) || return 2 #'
+#	if [ -s "$(/usr/bin/make -V INDEXDIR)/$(/usr/bin/make -V INDEXFILE)" ]; then
+#		for o in ${origins}; do
+#			test "_$(${PREFIX}/sbin/pkg-static query -e "%o = ${o}" '%k')" = '_0' || continue
+#			/usr/bin/make index || return 3
+#			break
+#		done
+#	else
+#		/usr/bin/make index || return 3
+#	fi
+#	${PREFIX}/sbin/pkg-static version -vL= | /usr/bin/grep -Ev '[[:space:]]>[[:space:]]|[[:space:]]orphaned[:[:space:]]+local/'
+#	cd "${old_pwd}"
+#}
