@@ -16,7 +16,6 @@ set -o emacs
 
 # some useful aliases
 alias h='fc -l'
-alias i='/usr/bin/grep --extended-regexp --ignore-case --color=auto'
 alias j='jobs'
 alias m='/usr/bin/less --no-init --chop-long-lines --RAW-CONTROL-CHARS'
 
@@ -56,7 +55,6 @@ if [ "${OSTYPE}" != "${OSTYPE#freebsd}" ]; then
 	alias instpc="/usr/bin/nice -n32 ${PREFIX}/bin/doas /usr/bin/make package deinstall install clean"
 	alias zfsget='/sbin/zfs get mountpoint,canmount,mounted,checksum,compression,compressratio,dedup,atime,devices,exec,setuid,xattr,readonly,primarycache,secondarycache,logbias,sync,volsize,volblocksize'
 	alias kldsize='echo $(($(kldstat | sed -rn "s/^[[:space:]]*[[:digit:]].*[[:space:]]([[:xdigit:]]+)[[:space:]]+[^[:space:]]+[[:space:]]*\$/+0x\1/p")))'
-	alias tmux="${PREFIX}/bin/tmux attach || ${PREFIX}/bin/tmux new"
 	alias sh_='exec /bin/sh'
 
 	alias mk_venv='python -m venv env --system-site-packages --symlinks --prompt "\[\033[1;33m\]${PWD##*/}\[\033[0m\]" && source env/bin/activate && pip install --upgrade --quiet --progress-bar off pip setuptools'
@@ -68,7 +66,6 @@ if [ "${OSTYPE}" != "${OSTYPE#freebsd}" ]; then
 	#alias jmail="${PREFIX}/bin/doas /usr/sbin/jexec mail /usr/bin/su -l ${USER}"
 	#alias hast1="${PREFIX}/bin/doas /sbin/hastctl status -c /etc/hast1.conf"
 	#alias hast2="${PREFIX}/bin/doas /sbin/hastctl status -c /etc/hast2.conf"
-
 else
 	PREFIX='/opt/homebrew'
 	GIT='/usr/bin/git'
@@ -77,11 +74,13 @@ else
 	alias cdd="cd ${HOME}/src"
 	alias t='/opt/homebrew/bin/terraform'
 	alias k='/opt/homebrew/bin/kubectl'
+	alias ldd='/usr/bin/otool -L'
 fi
 
 #alias l='/bin/ls -lGp'
 alias l="${PREFIX}/bin/exa --long --group-directories-first --bytes"
 
+alias tmux="${PREFIX}/bin/tmux attach || ${PREFIX}/bin/tmux new"
 alias weather="${CURL} http://wttr.in/Vyshhorod"
 
 alias giadd="${GIT} add"
@@ -117,7 +116,8 @@ md() {
 }
 
 cdiff() {
-	test -z "${1}" || "${PREFIX}/bin/colordiff" -duw ${*} | /usr/bin/less --no-init --chop-long-lines --RAW-CONTROL-CHARS
+	test -z "${1}" || "${PREFIX}/bin/colordiff" -duw ${*} |
+		/usr/bin/less --no-init --chop-long-lines --RAW-CONTROL-CHARS
 }
 
 pdiff() {
