@@ -75,6 +75,7 @@ else
 	alias t='/opt/homebrew/bin/terraform'
 	alias k='/opt/homebrew/bin/kubectl'
 	alias ldd='/usr/bin/otool -L'
+	alias doas='/usr/bin/sudo'
 fi
 
 #alias l='/bin/ls -lGp'
