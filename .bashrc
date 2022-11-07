@@ -36,15 +36,16 @@ fi
 unset PS1_HOST PS1_TAIL_COLOR NO_COLOR_PS1 RESET GRAY RED GREEN YELLOW BLUE CYAN #MAGENTA WHITE
 
 if [ "${OSTYPE}" != "${OSTYPE#darwin}" ]; then
-	test -x '/opt/local/bin/mcedit' && export EDITOR='/opt/local/bin/mcedit'
+	export BASH_SILENCE_DEPRECATION_WARNING=1
 	export HOMEBREW_AUTOREMOVE=1
 	export HOMEBREW_BAT=1
 	export HOMEBREW_NO_ANALYTICS=1
 	export HOMEBREW_NO_EMOJI=1
 	export HOMEBREW_NO_ENV_HINTS=1
 	export INFOPATH="${INFOPATH:+${INFOPATH}:}/opt/homebrew/share/info"
+	test -x '/opt/local/bin/mcedit' && export EDITOR='/opt/local/bin/mcedit'
 
-	alias make='/opt/homebrew/bin/bsdmake'
+	alias make='/opt/homebrew/bin/bmake'
 
 	test -s "${ENV:=${HOME}/.shrc}" && export ENV
 else

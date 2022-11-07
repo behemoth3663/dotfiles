@@ -33,10 +33,9 @@ export BLOCKSIZE='K'
 export PAGER='/usr/bin/less'
 export LESS='--no-init --chop-long-lines'
 export LESSHISTFILE='/dev/null'
-#export MANWIDTH=tty
 
-#--squeeze-blank-lines?
-export GIT_PAGER='/usr/bin/less --no-init --chop-long-lines --RAW-CONTROL-CHARS'
+export MANPAGER='/usr/bin/less --no-init --chop-long-lines --RAW-CONTROL-CHARS'
+export GIT_PAGER="${MANPAGER}"
 
 #export PS1="\[\033[0;32m\]\n\w\n\[\033[0m\]$(kubectl config view -o json | jq --join-output '."current-context" as $ctx | .contexts[] | select(.name == $ctx) | [.name, .context.namespace] | join("/")')\[\033[1;33m\]>\[\033[0m\] "
 PS1="${USER}@\\h:\\w \\$ "
