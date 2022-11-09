@@ -102,11 +102,10 @@ alias gista="${GIT} status --short --branch --untracked-files=no"
 alias gdiff="${GIT} diff"
 alias gfetch="${GIT} fetch --verbose --all --append --prune"
 alias gpull="${GIT} pull --verbose --all"
-alias gpush="${GIT} push origin --verbose --all --set-upstream --follow-tags"
-alias gpushtag="${GIT} push origin --verbose --tags"
-#--set-upstream?
+alias gpush="${GIT} push --verbose --all --set-upstream --follow-tags origin"
+alias gpushtag="${GIT} push --verbose --tags origin"
 alias gpullbra="${GIT}"' pull --verbose origin $('"${GIT}"' branch --show-current)'
-alias gpushbra="${GIT}"' push --verbose --follow-tags origin $('"${GIT}"' branch --show-current)'
+alias gpushbra="${GIT}"' push --verbose --set-upstream origin $('"${GIT}"' branch --show-current)'
 alias girem="${GIT} remote --verbose"
 alias giremshow="${GIT} remote --verbose show origin"
 alias gitags="${GIT} ls-remote --tags origin"
