@@ -34,6 +34,7 @@ export PAGER='/usr/bin/less'
 export LESS='--no-init --chop-long-lines'
 export LESSHISTFILE='/dev/null'
 
+export MANWIDTH='78'
 export MANPAGER='/usr/bin/less --no-init --chop-long-lines --RAW-CONTROL-CHARS'
 export GIT_PAGER="${MANPAGER}"
 
