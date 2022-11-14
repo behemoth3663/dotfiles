@@ -86,9 +86,12 @@ else
 		test "${s}" = "${ss}" ||
 			! name="${ss% Adapter *}" || continue
 		ss="${s#Device: }"
-		test "${s}" = "${ss}" ||
-			! ip=$(ipconfig getifaddr ${ss}) ||
-			test -z "${ip}" || echo "${ss}: ${ip} (${name})"
+		if [ "${s}" != "${ss}" ] && ip=$(ipconfig getifaddr "${ss}") && [ -n "${ip}" ]; then
+			hw=$(networksetup -getmacaddress "${ss}")
+			test -n "${hw}" && hw="${hw% (*}" && hw="${hw##* }"
+			rtr=$(netstat -rnfinet | sed -rn "s/^[[:space:]]*default[[:space:]]+([^[:space:]]+).*/\1/p")
+			echo "${ss}: ${hw:+${hw} }${ip} (${name})${rtr:+ >> ${rtr}}"
+		fi
 	done'
 fi
 
