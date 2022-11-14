@@ -81,7 +81,15 @@ else
 	alias t='/opt/homebrew/bin/terraform'
 	alias k='/opt/homebrew/bin/kubectl'
 	alias ldd='/usr/bin/otool -L'
-	alias ips='for i in $(networksetup -listallhardwareports | sed -rn "s/.*Device:[[:space:]]+//p"); do ip=$(ipconfig getifaddr "${i}"); test -z "${ip}" || echo "${i}: ${ip}"; done'
+	alias ips='networksetup -listallhardwareports | while read s; do
+		ss="${s#* Port: }"
+		test "${s}" = "${ss}" ||
+			! name="${ss% Adapter *}" || continue
+		ss="${s#Device: }"
+		test "${s}" = "${ss}" ||
+			! ip=$(ipconfig getifaddr ${ss}) ||
+			test -z "${ip}" || echo "${ss}: ${ip} (${name})"
+	done'
 fi
 
 #alias l='/bin/ls -lGp'
