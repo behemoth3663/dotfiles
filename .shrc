@@ -144,9 +144,11 @@ pdiff() {
 }
 
 gibradel() {
-	test -n "${1}" || return 1
-	${GIT} branch --delete --force "${1}" || return 2
-	${GIT} push origin --delete "${1}"
+	while [ -n "${1}" ]; do
+		${GIT} branch --delete --force "${1}"
+		${GIT} push origin --delete "${1}"
+		shift
+	done
 }
 
 pkg_ls_bin() {
