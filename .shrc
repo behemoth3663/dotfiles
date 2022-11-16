@@ -81,15 +81,16 @@ else
 	alias t='/opt/homebrew/bin/terraform'
 	alias k='/opt/homebrew/bin/kubectl'
 	alias ldd='/usr/bin/otool -L'
-	alias ips='networksetup -listallhardwareports | while read s; do
+	alias ips='networksetup -listallhardwareports | while read -r s; do
 		ss="${s#* Port: }"
-		test "${s}" = "${ss}" ||
-			! name="${ss% Adapter *}" || continue
+		test "${s}" = "${ss}" || ! name="${ss% Adapter *}" || continue
 		ss="${s#Device: }"
 		if [ "${s}" != "${ss}" ] && ip=$(ipconfig getifaddr "${ss}") && [ -n "${ip}" ]; then
 			hw=$(networksetup -getmacaddress "${ss}")
 			test -n "${hw}" && hw="${hw% (*}" && hw="${hw##* }"
-			rtr=$(netstat -rnfinet | sed -rn "s/^[[:space:]]*default[[:space:]]+([^[:space:]]+).*/\1/p")
+			rtr=$(netstat -rnfinet | awk "\$1 == \"default\" && \$4 == \"${ss}\" {
+				printf(\"%s%s\", \$2, index(\$3, \"I\") > 0 ? \"\" : \" (*)\")
+			}")
 			echo "${ss}: ${hw:+${hw} }${ip} (${name})${rtr:+ >> ${rtr}}"
 		fi
 	done'
