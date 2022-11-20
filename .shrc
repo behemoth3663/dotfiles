@@ -94,7 +94,10 @@ elif [ "${OSTYPE}" != "${OSTYPE#darwin}" ]; then
 		rtr=$(netstat -rnfinet | awk "\$1 == \"default\" && \$4 == \"${ss}\" {
 			printf(\" >> %s%s\n\", \$2, index(\$3, \"I\") > 0 ? \"\" : \" (*)\")
 		}")
-		echo "${ss}: ${hw:+${hw} }${ip} (${name})${rtr}"
+		for i in $(networksetup -getdnsservers "${name}"); do
+			dns="${dns}${dns:+,}${i}"
+		done
+		echo "${ss}: ${hw:+${hw} }${ip} (${name})${rtr}${dns:+ DNS:${dns}}"
 	done'
 elif [ "${OSTYPE}" != "${OSTYPE#linux}" ]; then
 	PREFIX='/home/linuxbrew/.linuxbrew'
