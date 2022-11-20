@@ -85,14 +85,15 @@ else
 		ss="${s#* Port: }"
 		test "${s}" = "${ss}" || ! name="${ss% Adapter *}" || continue
 		ss="${s#Device: }"
-		if [ "${s}" != "${ss}" ] && ip=$(ipconfig getifaddr "${ss}") && [ -n "${ip}" ]; then
-			hw=$(networksetup -getmacaddress "${ss}")
-			test -n "${hw}" && hw="${hw% (*}" && hw="${hw##* }"
-			rtr=$(netstat -rnfinet | awk "\$1 == \"default\" && \$4 == \"${ss}\" {
-				printf(\"%s%s\", \$2, index(\$3, \"I\") > 0 ? \"\" : \" (*)\")
-			}")
-			echo "${ss}: ${hw:+${hw} }${ip} (${name})${rtr:+ >> ${rtr}}"
-		fi
+		test "${s}" != "${ss}" || continue
+		ip=$(ipconfig getifaddr "${ss}") || continue
+		test -n "${ip}" || continue
+		hw=$(networksetup -getmacaddress "${ss}")
+		test -n "${hw}" && hw="${hw% (*}" && hw="${hw##* }"
+		rtr=$(netstat -rnfinet | awk "\$1 == \"default\" && \$4 == \"${ss}\" {
+			printf(\" >> %s%s\n\", \$2, index(\$3, \"I\") > 0 ? \"\" : \" (*)\")
+		}")
+		echo "${ss}: ${hw:+${hw} }${ip} (${name})${rtr}"
 	done'
 fi
 
