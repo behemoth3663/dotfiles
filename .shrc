@@ -50,7 +50,6 @@ if [ "${OSTYPE}" != "${OSTYPE#freebsd}" ]; then
 	alias mkadl='/usr/bin/nice -n32 /usr/bin/make all-depends-list'
 	alias mkcfg="${PREFIX}/bin/doas /usr/bin/make config"
 	alias mkcfgr="/usr/bin/nice -n32 ${PREFIX}/bin/doas /usr/bin/make config-recursive"
-	#alias mkcal='(exec 4>&1 && exit $({ { /usr/bin/time /usr/bin/nice -n32 /usr/bin/make clean all 2>&1; echo $? 1>&3; } | /usr/bin/tee build.log 1>&4 2>&1; } 3>&1))'
 	alias mkcal="{ WRKDIR=\$(/usr/bin/make -V WRKDIR) && test -d \"\${WRKDIR}\" && /usr/bin/nice -n32 ${PREFIX}/bin/doas /usr/bin/find \"\${WRKDIR}\" -mindepth 2 -maxdepth 2 -name '.*' -uid 0 -exec /usr/sbin/chown -v \$(/usr/bin/id -u) {} \+ && /usr/bin/nice -n32 ${PREFIX}/bin/doas /bin/rm -rf -- \"\${WRKDIR}/pkg\" \"\${WRKDIR}/.metadir\"; set -o pipefail && /usr/bin/time /usr/bin/nice -n32 /usr/bin/make clean all 2>&1 | /usr/bin/tee build.log; }"
 	alias instpc="/usr/bin/nice -n32 ${PREFIX}/bin/doas /usr/bin/make package deinstall install clean"
 	alias zfsget='/sbin/zfs get mountpoint,canmount,mounted,checksum,compression,compressratio,dedup,atime,devices,exec,setuid,xattr,readonly,primarycache,secondarycache,logbias,sync,volsize,volblocksize'
@@ -66,21 +65,23 @@ if [ "${OSTYPE}" != "${OSTYPE#freebsd}" ]; then
 	#alias jmail="${PREFIX}/bin/doas /usr/sbin/jexec mail /usr/bin/su -l ${USER}"
 	#alias hast1="${PREFIX}/bin/doas /sbin/hastctl status -c /etc/hast1.conf"
 	#alias hast2="${PREFIX}/bin/doas /sbin/hastctl status -c /etc/hast2.conf"
-else
+elif [ "${OSTYPE}" != "${OSTYPE#darwin}" ]; then
 	PREFIX='/opt/homebrew'
 	GIT='/usr/bin/git'
 	CURL='/usr/bin/curl'
 
 	if [ -x '/opt/local/bin/doas' ]; then
 		alias sudo='/opt/local/bin/doas'
+		alias sd='/opt/local/bin/doas /opt/local/bin/mc'
 	else
 		alias doas='/usr/bin/sudo'
+		alias sd='/usr/bin/sudo /opt/local/bin/mc'
 	fi
 
 	alias cdd="cd ${HOME}/src"
-	alias t='/opt/homebrew/bin/terraform'
 	alias k='/opt/homebrew/bin/kubectl'
 	alias ldd='/usr/bin/otool -L'
+	alias t='/opt/homebrew/bin/terraform'
 	alias ips='networksetup -listallhardwareports | while read -r s; do
 		ss="${s#* Port: }"
 		test "${s}" = "${ss}" || ! name="${ss% Adapter *}" || continue
@@ -95,6 +96,13 @@ else
 		}")
 		echo "${ss}: ${hw:+${hw} }${ip} (${name})${rtr}"
 	done'
+elif [ "${OSTYPE}" != "${OSTYPE#linux}" ]; then
+	PREFIX='/home/linuxbrew/.linuxbrew'
+	GIT='/usr/bin/git'
+	CURL='/usr/bin/curl'
+
+	alias doas='/usr/bin/sudo'
+	alias sd='/usr/bin/sudo /usr/bin/mc'
 fi
 
 #alias l='/bin/ls -lGp'
