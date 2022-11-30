@@ -82,6 +82,7 @@ elif [ "${OSTYPE}" != "${OSTYPE#darwin}" ]; then
 	alias cdd="cd ${HOME}/src"
 	alias k='/opt/homebrew/bin/kubectl'
 	alias ldd='/usr/bin/otool -L'
+	alias make='/opt/homebrew/bin/bmake'
 	alias t='/opt/homebrew/bin/terraform'
 	alias ips='networksetup -listallhardwareports | while read -r s; do
 		ss="${s#* Port: }"
