@@ -96,6 +96,7 @@ elif [ "${OSTYPE}" != "${OSTYPE#darwin}" ]; then
 		rtr=$(netstat -rnfinet | awk "\$1 == \"default\" && \$4 == \"${ss}\" {
 			printf(\" >> %s%s\n\", \$2, index(\$3, \"I\") > 0 ? \"\" : \" (*)\")
 		}")
+		unset dns
 		for i in $(sed -rn "s/^[[:space:]]*nameserver[[:space:]]+([^[:space:]]+).*/\1/p" /etc/resolv.conf); do
 			dns="${dns}${dns:+,}${i}"
 		done
