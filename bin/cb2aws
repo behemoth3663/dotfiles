@@ -19,6 +19,13 @@ _exit() {
 	exit "${rc}"
 }
 
+is_aws_keyword() {
+	test "_${1}" != '_aws_access_key_id' || return 0
+	test "_${1}" != '_aws_secret_access_key' || return 0
+	test "_${1}" != '_aws_session_token' || return 0
+	return 1
+}
+
 ##########
 ## main()
 ##########
@@ -40,10 +47,9 @@ while read -r s || test -n "${s}"; do
 		continue
 	fi
 	set -- ${s%%=*} ${s#*=}
-	test -z "${2}" || eval "${1}='${2}'"
+	test -n "${2}" && is_aws_keyword "${1}" && eval "${1}='${2}'"
 done <"${TMPFILE}"
 
-# aws_session_token may not exist
 test -n "${account_id}" || _exit "account_id not found"
 test -n "${aws_access_key_id}" || _exit "aws_access_key_id not found"
 test -n "${aws_secret_access_key}" || _exit "aws_secret_access_key not found"
@@ -57,9 +63,9 @@ while read -r s; do
 		test "_${1}" != "_${account_id}" || found=1
 	elif [ -n "${found}" ]; then
 		set -- ${s%%=*} ${s#*=}
-		if test -n "${1}" && eval "test -n \"\${${1}}\""; then
+		if is_aws_keyword "${1}" && eval "test -n \"\${${1}}\""; then
 			eval "echo \"${1}=\${${1}}\"" >>"${TMPFILE}"
-			patched=1
+			patched="${patched}${patched:+, }${1}"
 			continue
 		fi
 	fi
@@ -69,4 +75,4 @@ done <"${AWS_CONFIG_FILE}"
 test -n "${patched}" || exit 0
 mv -f -- "${AWS_CONFIG_FILE}" "${AWS_CONFIG_FILE}.orig" &&
 	mv -f -- "${TMPFILE}" "${AWS_CONFIG_FILE}" &&
-	echo "Successfully patched account ${account_id}." >&2
+	echo "Successfully patched account ${account_id} with ${patched}." >&2
