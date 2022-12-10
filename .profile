@@ -42,7 +42,7 @@ export GIT_PAGER="${MANPAGER}"
 PS1="${USER}@\\h:\\w \\$ "
 
 if [ "${OSTYPE}" != "${OSTYPE#freebsd}" ]; then
-	export DOCKER_HOST='tcp://10.35.254.7:2375'
+	export DOCKER_HOST="tcp://$(ifconfig em0 | sed -rn 's/^[[:space:]]+inet[[:space:]]+(([0-9]+.){3})[^[:space:]]+[[:space:]].*/\17/p'):2375" # 'tcp://10.35.254.7:2375'
 
 	test -x "${EDITOR:=/usr/local/bin/mcedit}" || EDITOR='/usr/bin/ee'
 	export EDITOR
