@@ -23,7 +23,7 @@ alias ..='cd ..'
 alias cd..='cd ..'
 alias n32='/usr/bin/nice -n32'
 
-alias pi='/sbin/ping -n -c5 -s0 8.8.8.8'
+alias pi='/sbin/ping -n -c5 -s16 -W5000 8.8.8.8'
 alias trace='/usr/sbin/traceroute -q1 -n'
 
 if [ "${OSTYPE}" != "${OSTYPE#freebsd}" ]; then
