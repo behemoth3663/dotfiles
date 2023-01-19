@@ -5,7 +5,7 @@
 # see also sh(1), environ(7).
 #
 
-echo '.profile' >&2
+test -n "${O1VM_SUPRESS_SHRC_LOGGING}" || echo '.profile' >&2
 
 # file permissions: rwxr-xr-x
 umask 22
@@ -42,7 +42,8 @@ export GIT_PAGER="${MANPAGER}"
 PS1="${USER}@\\h:\\w \\$ "
 
 if [ "${OSTYPE}" != "${OSTYPE#freebsd}" ]; then
-	export DOCKER_HOST="tcp://$(ifconfig em0 | sed -rn 's/^[[:space:]]+inet[[:space:]]+(([0-9]+.){3})[^[:space:]]+[[:space:]].*/\17/p'):2375" # 'tcp://10.35.254.7:2375'
+	set -- $(ifconfig -l ether)
+	test -z "${1}" || export DOCKER_HOST="tcp://$(ifconfig ${1} | sed -rn 's/^[[:space:]]+inet[[:space:]]+(([0-9]+.){3})[^[:space:]]+[[:space:]].*/\17/p'):2375" # 'tcp://10.35.254.7:2375'
 
 	test -x "${EDITOR:=/usr/local/bin/mcedit}" || EDITOR='/usr/bin/ee'
 	export EDITOR

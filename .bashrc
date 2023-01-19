@@ -1,4 +1,4 @@
-echo '.bashrc' >&2
+test -n "${O1VM_SUPRESS_SHRC_LOGGING}" || echo '.bashrc' >&2
 
 HISTSIZE='100000'
 HISTFILESIZE='1000000'
