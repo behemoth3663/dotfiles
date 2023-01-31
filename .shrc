@@ -33,7 +33,8 @@ if [ "${OSTYPE}" != "${OSTYPE#freebsd}" ]; then
 
 	test -x "${PREFIX}/bin/doas" && alias sudo="${PREFIX}/bin/doas"
 
-	alias cdd="cd /usr/${HOME}/src"
+	alias cdd="cd /usr${HOME}/src"
+	test -d "/usr${HOME}/src" || alias cdd="cd ${HOME}/src"
 
 	alias gdb='/usr/libexec/gdb'
 	alias ss='/usr/bin/sockstat'
@@ -183,6 +184,9 @@ pdiff() {
 
 gibradel() {
 	while [ -n "${1}" ]; do
+		test "${1}" != "$(${GIT} branch --show-current)" ||
+			${GIT} checkout "$(${GIT} branch --remotes --list 'origin/ma*' |
+				sed -rn 's,^[[:space:]]*origin/(master|main)$,\1,p;q')"
 		${GIT} branch --delete --force "${1}"
 		${GIT} push origin --delete "${1}"
 		shift
