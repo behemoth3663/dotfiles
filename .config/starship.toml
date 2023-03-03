@@ -1,0 +1,93 @@
+# Get editor completions based on the config schema
+"$schema" = 'https://starship.rs/config-schema.json'
+
+# Inserts a blank line between shell prompts
+add_newline = true
+
+# Replace the '❯' symbol in the prompt with '➜'
+[character] # The name of the module we are configuring is 'character'
+# success_symbol = '[➜](bold green)' # The 'success_symbol' segment is being set to '➜' with the color 'bold green'
+success_symbol = '[>](green)'
+error_symbol = '[>](red)'
+
+[azure]
+disabled = true
+
+# Show the battery level if under 20%
+[[battery.display]]
+threshold = 25
+style = 'bold yellow'
+
+[[battery.display]]
+threshold = 5
+style = 'bold red'
+
+[battery]
+full_symbol = "• "
+charging_symbol = "⇡ "
+discharging_symbol = "⇣ "
+unknown_symbol = "❓ "
+empty_symbol = "❗ "
+
+[cobol]
+disabled = true
+
+[cmd_duration]
+min_time = 999
+format = "[$duration]($style) "
+
+[crystal]
+disabled = true
+
+[daml]
+disabled = true
+
+[directory]
+truncation_length = 0
+truncate_to_repo = false
+style = "bold black"
+
+[docker_context]
+format = "[$context]($style) "
+style = "blue"
+
+[erlang]
+symbol = "ⓔ "
+
+[fennel]
+disabled = true
+
+[fill]
+disabled = true
+
+[gcloud]
+disabled = true
+
+[git_branch]
+format = "[$branch(:$remote_branch)]($style) "
+style = "purple"
+
+# [git_commit]
+# only_detached = true
+# [git_state]
+# [git_metrics]
+[git_status]
+style = "red"
+# format = "([\\[$all_status$ahead_behind\\]]($style) )"
+
+# [memory_usage]
+# disabled = false
+# threshold = 0
+
+[nodejs]
+symbol = "[⬢](green) "
+
+[pulumi]
+symbol = "🧊 "
+
+# [status]
+# disabled = false
+# format = '[\[$status - $common_meaning\]](green)'
+
+[terraform]
+disabled = true

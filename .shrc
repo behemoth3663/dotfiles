@@ -1,3 +1,4 @@
+# shellcheck disable=SC2148
 # $FreeBSD: src/share/skel/dot.shrc,v 1.2 1999/08/28 00:21:54 peter Exp $
 #
 # .shrc - bourne shell startup file
@@ -24,148 +25,201 @@ alias n32='/usr/bin/nice -n32'
 alias pi='/sbin/ping -n -c5 -s16 -W5000 8.8.8.8'
 alias trace='/usr/sbin/traceroute -q1 -n'
 
-if [ "${OSTYPE}" != "${OSTYPE#freebsd}" ]; then
-	PREFIX='/usr/local'
-	GIT="${PREFIX}/bin/git"
-	CURL="${PREFIX}/bin/curl"
+case "${OSTYPE}" in
+	freebsd*)
+		PREFIX='/usr/local'
+		GIT="${PREFIX}/bin/git"
+		CURL="${PREFIX}/bin/curl"
 
-	test -x "${PREFIX}/bin/doas" && alias sudo="${PREFIX}/bin/doas"
+		# shellcheck disable=SC2139
+		test -x "${PREFIX}/bin/doas" && alias sudo="${PREFIX}/bin/doas"
 
-	alias cdd="cd /usr${HOME}/src"
-	test -d "/usr${HOME}/src" || alias cdd="cd ${HOME}/src"
+		# shellcheck disable=SC2139
+		alias cdd="cd /usr${HOME}/src"
+		# shellcheck disable=SC2139
+		test -d "/usr${HOME}/src" || alias cdd="cd ${HOME}/src"
 
-	alias gdb='/usr/libexec/gdb'
-	alias ss='/usr/bin/sockstat'
-	alias sd="sudo ${PREFIX}/bin/deco"
-	alias t="${PREFIX}/bin/terraform"
-	alias k='kubectl'
+		alias gdb='/usr/libexec/gdb'
+		alias ss='/usr/bin/sockstat'
+		# shellcheck disable=SC2139
+		alias sd="sudo ${PREFIX}/bin/deco"
+		# shellcheck disable=SC2139
+		alias t="${PREFIX}/bin/terraform"
+		alias k='kubectl'
 
-	alias pkg_ver="${PREFIX}/sbin/pkg-static version -vL= | /usr/bin/grep --extended-regex --invert-match '[[:space:]]>[[:space:]]|[[:space:]]orphaned[:[:space:]]+local/' | /usr/bin/less --no-init --quit-if-one-screen"
-	alias pkg_vers="${PREFIX}/sbin/pkg-static version -vL= | /usr/bin/less --no-init --quit-if-one-screen"
-	alias portver="/usr/sbin/portsnap fetch update && ${PREFIX}/sbin/pkg-static version -vL= | /usr/bin/grep --extended-regex --invert-match '[[:space:]]>[[:space:]]|[[:space:]]orphaned[:[:space:]]+local/'"
-	alias portupg="/usr/bin/nice -n32 ${PREFIX}/sbin/portmaster --no-confirm --no-term-title -Bdgty -x doas -x sudo"
-	alias port_extract='test "${PWD##/usr/ports/*/}" != "${PWD}" && /bin/rm -rf -- Makefile.local && pkg_origin=$(/usr/bin/make -V PKGORIGIN) && test -n "${pkg_origin}" && pkg_pwd="${PWD}" && cd .. && '"${PREFIX}"'/bin/doas /bin/rm -rf -- "${pkg_pwd##*/}" && /usr/sbin/portsnap extract "${pkg_origin}/" && cd "${pkg_pwd}"'
+		# shellcheck disable=SC2139
+		alias pkg_ver="${PREFIX}/sbin/pkg-static version -vL= | /usr/bin/grep --extended-regex --invert-match '[[:space:]]>[[:space:]]|[[:space:]]orphaned[:[:space:]]+local/' | /usr/bin/less --no-init --quit-if-one-screen"
+		# shellcheck disable=SC2139
+		alias pkg_vers="${PREFIX}/sbin/pkg-static version -vL= | /usr/bin/less --no-init --quit-if-one-screen"
+		# shellcheck disable=SC2139
+		alias portver="/usr/sbin/portsnap fetch update && ${PREFIX}/sbin/pkg-static version -vL= | /usr/bin/grep --extended-regex --invert-match '[[:space:]]>[[:space:]]|[[:space:]]orphaned[:[:space:]]+local/'"
+		# shellcheck disable=SC2139
+		alias portupg="/usr/bin/nice -n32 ${PREFIX}/sbin/portmaster --no-confirm --no-term-title -Bdgty -x doas -x sudo"
+		# shellcheck disable=SC2154,SC2139
+		alias port_extract='test "${PWD##/usr/ports/*/}" != "${PWD}" && /bin/rm -rf -- Makefile.local && pkg_origin=$(/usr/bin/make -V PKGORIGIN) && test -n "${pkg_origin}" && pkg_pwd="${PWD}" && cd .. && '"${PREFIX}"'/bin/doas /bin/rm -rf -- "${pkg_pwd##*/}" && /usr/sbin/portsnap extract "${pkg_origin}/" && cd "${pkg_pwd}"'
 
-	alias mkadl='/usr/bin/nice -n32 /usr/bin/make all-depends-list'
-	alias mkcfg="${PREFIX}/bin/doas /usr/bin/make config"
-	alias mkcfgr="/usr/bin/nice -n32 ${PREFIX}/bin/doas /usr/bin/make config-recursive"
-	alias mkcal="{ WRKDIR=\$(/usr/bin/make -V WRKDIR) && test -d \"\${WRKDIR}\" && /usr/bin/nice -n32 ${PREFIX}/bin/doas /usr/bin/find \"\${WRKDIR}\" -mindepth 2 -maxdepth 2 -name '.*' -uid 0 -exec /usr/sbin/chown -v \$(/usr/bin/id -u) {} \+ && /usr/bin/nice -n32 ${PREFIX}/bin/doas /bin/rm -rf -- \"\${WRKDIR}/pkg\" \"\${WRKDIR}/.metadir\"; set -o pipefail && /usr/bin/time /usr/bin/nice -n32 /usr/bin/make clean all 2>&1 | /usr/bin/tee build.log; }"
-	alias instpc="/usr/bin/nice -n32 ${PREFIX}/bin/doas /usr/bin/make package deinstall install clean"
-	alias zfsget='/sbin/zfs get mountpoint,canmount,mounted,checksum,compression,compressratio,dedup,atime,devices,exec,setuid,xattr,readonly,primarycache,secondarycache,logbias,sync,volsize,volblocksize'
-	alias kldsize='echo $(($(kldstat | sed -rn "s/^[[:space:]]*[[:digit:]].*[[:space:]]([[:xdigit:]]+)[[:space:]]+[^[:space:]]+[[:space:]]*\$/+0x\1/p")))'
-	alias sh_='exec /bin/sh'
+		alias mkadl='/usr/bin/nice -n32 /usr/bin/make all-depends-list'
+		# shellcheck disable=SC2139
+		alias mkcfg="${PREFIX}/bin/doas /usr/bin/make config"
+		# shellcheck disable=SC2139
+		alias mkcfgr="/usr/bin/nice -n32 ${PREFIX}/bin/doas /usr/bin/make config-recursive"
+		# shellcheck disable=SC2139
+		alias mkcal="{ WRKDIR=\$(/usr/bin/make -V WRKDIR) && test -d \"\${WRKDIR}\" && /usr/bin/nice -n32 ${PREFIX}/bin/doas /usr/bin/find \"\${WRKDIR}\" -mindepth 2 -maxdepth 2 -name '.*' -uid 0 -exec /usr/sbin/chown -v \$(/usr/bin/id -u) {} \+ && /usr/bin/nice -n32 ${PREFIX}/bin/doas /bin/rm -rf -- \"\${WRKDIR}/pkg\" \"\${WRKDIR}/.metadir\"; set -o pipefail && /usr/bin/time /usr/bin/nice -n32 /usr/bin/make clean all 2>&1 | /usr/bin/tee build.log; }"
+		# shellcheck disable=SC2139
+		alias instpc="/usr/bin/nice -n32 ${PREFIX}/bin/doas /usr/bin/make package deinstall install clean"
+		alias zfsget='/sbin/zfs get mountpoint,canmount,mounted,checksum,compression,compressratio,dedup,atime,devices,exec,setuid,xattr,readonly,primarycache,secondarycache,logbias,sync,volsize,volblocksize'
+		alias kldsize='echo $(($(kldstat | sed -rn "s/^[[:space:]]*[[:digit:]].*[[:space:]]([[:xdigit:]]+)[[:space:]]+[^[:space:]]+[[:space:]]*\$/+0x\1/p")))'
+		alias sh_='exec /bin/sh'
 
-	alias mk_venv='python -m venv env --system-site-packages --symlinks --prompt "\[\033[1;33m\]${PWD##*/}\[\033[0m\]" && source env/bin/activate && pip install --upgrade --quiet --progress-bar off pip setuptools'
-	alias mk_venv3.9='python3.9 -m venv env --prompt "\[\033[1;32m\]${PWD##*/}\[\033[0m\]" && source env/bin/activate'
-	alias activate='test -s env/bin/activate && . env/bin/activate'
-	alias pip_upgrade="test -z \"\${VIRTUAL_ENV}\" || pip list --outdated --format=freeze | sed -rn -e '/^(-e|evdev|spyder|isort|lazy-object-proxy)/d' -e 's/=.*//p' | xargs pip install --upgrade"
-	alias pip_upgrade_list="test -z \"\${VIRTUAL_ENV}\" || pip list --outdated --format=freeze | sed -rn -e '/^-e/d'"
+		alias mk_venv='python -m venv env --system-site-packages --symlinks --prompt "\[\033[1;33m\]${PWD##*/}\[\033[0m\]" && source env/bin/activate && pip install --upgrade --quiet --progress-bar off pip setuptools'
+		alias mk_venv3.9='python3.9 -m venv env --prompt "\[\033[1;32m\]${PWD##*/}\[\033[0m\]" && source env/bin/activate'
+		alias activate='test -s env/bin/activate && . env/bin/activate'
+		alias pip_upgrade="test -z \"\${VIRTUAL_ENV}\" || pip list --outdated --format=freeze | sed -rn -e '/^(-e|evdev|spyder|isort|lazy-object-proxy)/d' -e 's/=.*//p' | xargs pip install --upgrade"
+		alias pip_upgrade_list="test -z \"\${VIRTUAL_ENV}\" || pip list --outdated --format=freeze | sed -rn -e '/^-e/d'"
 
-	#alias jmail="${PREFIX}/bin/doas /usr/sbin/jexec mail /usr/bin/su -l ${USER}"
-	#alias hast1="${PREFIX}/bin/doas /sbin/hastctl status -c /etc/hast1.conf"
-	#alias hast2="${PREFIX}/bin/doas /sbin/hastctl status -c /etc/hast2.conf"
-elif [ "${OSTYPE}" != "${OSTYPE#darwin}" ]; then
-	PREFIX='/opt/homebrew'
-	GIT='/usr/bin/git'
-	CURL='/usr/bin/curl'
-	export LANG='en_GB.UTF-8'
+		#alias jmail="${PREFIX}/bin/doas /usr/sbin/jexec mail /usr/bin/su -l ${USER}"
+		#alias hast1="${PREFIX}/bin/doas /sbin/hastctl status -c /etc/hast1.conf"
+		#alias hast2="${PREFIX}/bin/doas /sbin/hastctl status -c /etc/hast2.conf"
+		#if [ -n "${BASH}" ] && [ -x /usr/local/bin/starship ]; then
+		#	# shellcheck disable=SC1090
+		#	source <(/usr/local/bin/starship init bash --print-full-init)
+		#fi
+		;;
+	darwin*)
+		PREFIX='/opt/homebrew'
+		GIT='/usr/bin/git'
+		CURL='/usr/bin/curl'
+		export LANG='en_GB.UTF-8'
 
-	if [ -x '/opt/local/bin/doas' ]; then
-		alias sudo='/opt/local/bin/doas'
-		alias sd='/opt/local/bin/doas /opt/local/bin/mc'
-	else
+		if [ -x '/opt/local/bin/doas' ]; then
+			alias sudo='/opt/local/bin/doas'
+			alias sd='/opt/local/bin/doas /opt/local/bin/mc'
+		else
+			alias doas='/usr/bin/sudo'
+			alias sd='/usr/bin/sudo /opt/local/bin/mc'
+		fi
+
+		JAVA_HOME="${PREFIX}/opt/java"
+		test -x "${JAVA_HOME}/bin/java" && export JAVA_HOME &&
+			export PATH="${PATH%%:/usr/bin:*}:${JAVA_HOME}/bin:/usr/bin:${PATH##*:/usr/bin:}"
+
+		# Atlassian Command Line Interface (CLI)
+		# https://marketplace.atlassian.com/apps/10886/atlassian-command-line-interface-cli
+		test -x "${HOME}/ACLI/acli" && export COLUMNS='120' # && export PATH="${PATH}:${HOME}/ACLI"
+
+		GROOVY_HOME="${PREFIX}/opt/groovy/libexec"
+		test -x "${GROOVY_HOME}/bin/groovy" && export GROOVY_HOME
+
+		# shellcheck disable=SC2139
+		alias cdd="cd ${HOME}/src"
+		alias k='/opt/homebrew/bin/kubectl'
+		alias ldd='/usr/bin/otool -L'
+		alias make='/opt/homebrew/bin/bmake'
+		alias t='/opt/homebrew/bin/terraform'
+		# shellcheck disable=SC2142,SC2154
+		alias ips='networksetup -listallhardwareports | while read -r s; do
+			ss="${s#* Port: }"
+			test "${s}" = "${ss}" || ! name="${ss% Adapter *}" || continue
+			ss="${s#Device: }"
+			test "${s}" != "${ss}" || continue
+			ip=$(ipconfig getifaddr "${ss}") || continue
+			test -n "${ip}" || continue
+			hw=$(networksetup -getmacaddress "${ss}")
+			test -n "${hw}" && hw="${hw% (*}" && hw="${hw##* }"
+			rtr=$(netstat -rnfinet | awk "\$1 == \"default\" && \$4 == \"${ss}\" {
+				printf(\" >> %s%s\n\", \$2, index(\$3, \"I\") > 0 ? \"\" : \" (*)\")
+			}")
+			unset dns
+			for i in $(sed -rn "s/^[[:space:]]*nameserver[[:space:]]+([^[:space:]]+).*/\1/p" /etc/resolv.conf); do
+				dns="${dns}${dns:+,}${i}"
+			done
+			echo "${ss}: ${hw:+${hw} }${ip} (${name})${rtr}${dns:+ DNS:${dns}}"
+		done'
+		;;
+	linux*)
+		PREFIX='/home/linuxbrew/.linuxbrew'
+		GIT='/usr/bin/git'
+		CURL='/usr/bin/curl'
+
 		alias doas='/usr/bin/sudo'
-		alias sd='/usr/bin/sudo /opt/local/bin/mc'
-	fi
-
-	JAVA_HOME="${PREFIX}/opt/java"
-	test -x "${JAVA_HOME}/bin/java" && export JAVA_HOME &&
-		export PATH="${PATH%%:/usr/bin:*}:${JAVA_HOME}/bin:/usr/bin:${PATH##*:/usr/bin:}"
-
-	# Atlassian Command Line Interface (CLI)
-	# https://marketplace.atlassian.com/apps/10886/atlassian-command-line-interface-cli
-	test -x "${HOME}/ACLI/acli" && export COLUMNS='120' # && export PATH="${PATH}:${HOME}/ACLI"
-
-	GROOVY_HOME="${PREFIX}/opt/groovy/libexec"
-	test -x "${GROOVY_HOME}/bin/groovy" && export GROOVY_HOME
-
-	alias cdd="cd ${HOME}/src"
-	alias k='/opt/homebrew/bin/kubectl'
-	alias ldd='/usr/bin/otool -L'
-	alias make='/opt/homebrew/bin/bmake'
-	alias t='/opt/homebrew/bin/terraform'
-	alias ips='networksetup -listallhardwareports | while read -r s; do
-		ss="${s#* Port: }"
-		test "${s}" = "${ss}" || ! name="${ss% Adapter *}" || continue
-		ss="${s#Device: }"
-		test "${s}" != "${ss}" || continue
-		ip=$(ipconfig getifaddr "${ss}") || continue
-		test -n "${ip}" || continue
-		hw=$(networksetup -getmacaddress "${ss}")
-		test -n "${hw}" && hw="${hw% (*}" && hw="${hw##* }"
-		rtr=$(netstat -rnfinet | awk "\$1 == \"default\" && \$4 == \"${ss}\" {
-			printf(\" >> %s%s\n\", \$2, index(\$3, \"I\") > 0 ? \"\" : \" (*)\")
-		}")
-		unset dns
-		for i in $(sed -rn "s/^[[:space:]]*nameserver[[:space:]]+([^[:space:]]+).*/\1/p" /etc/resolv.conf); do
-			dns="${dns}${dns:+,}${i}"
-		done
-		echo "${ss}: ${hw:+${hw} }${ip} (${name})${rtr}${dns:+ DNS:${dns}}"
-	done'
-elif [ "${OSTYPE}" != "${OSTYPE#linux}" ]; then
-	PREFIX='/home/linuxbrew/.linuxbrew'
-	GIT='/usr/bin/git'
-	CURL='/usr/bin/curl'
-
-	alias doas='/usr/bin/sudo'
-	alias sd='/usr/bin/sudo /usr/bin/mc'
-fi
+		alias sd='/usr/bin/sudo /usr/bin/mc'
+		;;
+esac
 
 alias m='/usr/bin/less --no-init --chop-long-lines --RAW-CONTROL-CHARS'
 if [ -x "${PREFIX}/bin/bat" ]; then
 	export BAT_PAGER='/usr/bin/less --no-init --chop-long-lines --RAW-CONTROL-CHARS'
+	# shellcheck disable=SC2139
 	alias m="${PREFIX}/bin/bat --plain --wrap never"
+	# shellcheck disable=SC2139
 	alias cat="/usr/bin/env BAT_PAGER='${BAT_PAGER} --quit-if-one-screen' ${PREFIX}/bin/bat --plain"
 fi
 
+# shellcheck disable=SC2139
 alias l="${PREFIX}/bin/exa --long --group-directories-first --bytes"
 test -x "${PREFIX}/bin/exa" || alias l='/bin/ls -lGp'
 
+# shellcheck disable=SC2139
 alias tmux="${PREFIX}/bin/tmux attach || ${PREFIX}/bin/tmux new"
+# shellcheck disable=SC2139
 alias weather="${CURL} http://wttr.in/Vyshhorod"
 
+# shellcheck disable=SC2139
 alias giadd="${GIT} add"
+# shellcheck disable=SC2139
 alias gibra="${GIT} branch --show-current"
+# shellcheck disable=SC2139
 alias gibras="/usr/bin/env GIT_PAGER='${GIT_PAGER:-${PAGER:-/usr/bin/less}} --quit-if-one-screen' ${GIT} branch --verbose --all"
+# shellcheck disable=SC2139
 alias giche="${GIT} checkout"
+# shellcheck disable=SC2139
 alias gichem="${GIT}"' checkout $('"${GIT}"' branch --remotes --list "origin/ma*" | sed -rn "s,^[[:space:]]*origin/(master|main)$,\1,p;q")'
+# shellcheck disable=SC2139
 alias gicam="${GIT} commit --verbose --all --message"
+# shellcheck disable=SC2139
 alias gigog="${GIT}"' log --graph --abbrev-commit --decorate --all --format=format:"%C(bold blue)%H%C(reset) - %C(bold cyan)%aD%C(dim white) - %an%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n %C(white)%s%C(reset)"'
+# shellcheck disable=SC2139
 alias gilog="${GIT}"' log --graph --pretty=format:"%C(bold blue)%h%C(dim white) [%C(bold cyan)%ai%C(dim white)] <%C(bold green)%ae%C(dim white)>%C(bold yellow)%d%C(reset) %s"'
 #alias gilog='${GIT} log --graph --pretty=format:"%C(bold blue)%h%C(dim white) [%C(bold cyan)%ai%C(dim white)] <%C(bold green)%ae%C(dim white)>%C(reset) %s"'
 #alias gilog='${GIT} log --graph --pretty=format:"%h [%ai] <%ae> %s"'
 #log --graph --pretty=format:'%Cred%h %C(green)%t %Creset %C(red)%ad %Creset-%C(yellow)%d%Creset %s %n      %N %-GG' --date=short
+# shellcheck disable=SC2139
 alias gils="${GIT} ls-files"
+# shellcheck disable=SC2139
 alias girebi="${GIT} rebase -i"
+# shellcheck disable=SC2139
 alias girebi2="${GIT} rebase -i HEAD~2"
+# shellcheck disable=SC2139
 alias gista="${GIT} status --short --branch --untracked-files=no"
+# shellcheck disable=SC2139
 alias gdiff="${GIT} diff"
+# shellcheck disable=SC2139
 alias gfetch="${GIT} fetch --verbose --all --append --prune"
+# shellcheck disable=SC2139
 alias gpull="${GIT} pull --verbose --all"
+# shellcheck disable=SC2139
 alias gpush="${GIT} push --verbose --all --set-upstream --follow-tags origin"
+# shellcheck disable=SC2139
 alias gpushtag="${GIT} push --verbose --tags origin"
+# shellcheck disable=SC2139
 alias gpullbra="${GIT}"' pull --verbose origin $('"${GIT}"' branch --show-current)'
+# shellcheck disable=SC2139
 alias gpushbra="${GIT}"' push --verbose --set-upstream origin $('"${GIT}"' branch --show-current)'
+# shellcheck disable=SC2139
 alias girem="${GIT} remote --verbose"
+# shellcheck disable=SC2139
 alias giremshow="${GIT} remote --verbose show origin"
+# shellcheck disable=SC2139
 alias gitags="${GIT} ls-remote --tags origin"
 
 md() {
 	test -n "${1}" || ! echo "${PWD}" || return 1
+	# shellcheck disable=SC2164
 	/bin/mkdir -p "${1}" && cd "${1}"
 }
 
 cdiff() {
+	# shellcheck disable=SC2048,SC2086
 	test -z "${1}" || "${PREFIX}/bin/colordiff" -duw ${*} |
 		/usr/bin/less --no-init --chop-long-lines --RAW-CONTROL-CHARS
 }
@@ -184,6 +238,7 @@ pdiff() {
 
 	test -n "${from}" || from="${to}.orig"
 
+	# shellcheck disable=SC2086
 	/usr/bin/env TZ=UTC /usr/bin/diff ${args} ${from} ${to} | /usr/bin/sed -e '/^---/s|\.[0-9]* +0000$| UTC|' -e '/^+++/s|\([[:blank:]][-0-9:.+]*\)*$||'
 }
 
@@ -200,27 +255,32 @@ gibradel() {
 
 gicd() {
 	local d
+	# shellcheck disable=SC2164
 	d=$(${GIT} rev-parse --show-toplevel) && cd "${d}"
 }
 
 pkg_ls_bin() {
 	# можно дополнить автоматическим определением директории порта по /usr/ports/* при пустом ${1}
 	local pkgs
+	# shellcheck disable=SC2048,SC2086
 	test -n "${1}" && pkgs=$(${PREFIX}/sbin/pkg-static query '%n' ${*}) && test -n "${pkgs}" || return 1
+	# shellcheck disable=SC2046,SC2086
 	/usr/bin/env LC_TIME='en_US.UTF-8' /bin/ls -lSG $(${PREFIX}/sbin/pkg-static query '%Fp' ${pkgs} | /usr/bin/xargs /usr/bin/file | /usr/bin/sed -rn 's/([^:]+):[[:space:]]+ELF[[:space:]].*/\1/p') #'
 }
 
-
 ll() {
 	if [ -x "${PREFIX}/bin/exa" ]; then
+		# shellcheck disable=SC2048,SC2086
 		"${PREFIX}/bin/exa" --all --long --group-directories-first --bytes --links --time-style long-iso --color always ${*} |
 			/usr/bin/less --no-init --chop-long-lines --RAW-CONTROL-CHARS --quit-if-one-screen
 	else
+		# shellcheck disable=SC2048,SC2086
 		/bin/ls -laGTop ${*}
 	fi
 }
 
 i() {
+	# shellcheck disable=SC2048,SC2086
 	/usr/bin/grep --extended-regexp --ignore-case --color=always ${*} |
 		/usr/bin/less --no-init --chop-long-lines --RAW-CONTROL-CHARS --quit-if-one-screen
 }
