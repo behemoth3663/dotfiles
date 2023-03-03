@@ -126,14 +126,14 @@ case "${OSTYPE}" in
 			test -n "${ip}" || continue
 			hw=$(networksetup -getmacaddress "${ss}")
 			test -n "${hw}" && hw="${hw% (*}" && hw="${hw##* }"
-			rtr=$(netstat -rnfinet | awk "\$1 == \"default\" && \$4 == \"${ss}\" {
-				printf(\" >> %s%s\n\", \$2, index(\$3, \"I\") > 0 ? \"\" : \" (*)\")
-			}")
 			unset dns
 			for i in $(sed -rn "s/^[[:space:]]*nameserver[[:space:]]+([^[:space:]]+).*/\1/p" /etc/resolv.conf); do
 				dns="${dns}${dns:+,}${i}"
 			done
-			echo "${ss}: ${hw:+${hw} }${ip} (${name})${rtr}${dns:+ DNS:${dns}}"
+			rtr=$(netstat -rnfinet | awk "\$1 == \"default\" && \$4 == \"${ss}\" {
+				printf(\" >> %s${dns:+ DNS:${dns}}%s\", \$2, index(\$3, \"I\") > 0 ? \"\" : \" (\033[1m*\033[0m)\")
+			}")
+			echo "${ss}: ${hw:+${hw} }${ip} (${name})${rtr}"
 		done'
 		;;
 	linux*)
