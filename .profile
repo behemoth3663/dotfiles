@@ -48,7 +48,7 @@ PS1="${USER}@\\h:\\w \\$ "
 case "${OSTYPE}" in
 	freebsd*)
 		# shellcheck disable=SC2046
-		set -- $(ifconfig -l ether)
+		set -- bridge0 #$(ifconfig -l ether)
 		# shellcheck disable=SC2155,SC2086
 		test -z "${1}" || export DOCKER_HOST="tcp://$(ifconfig ${1} | sed -rn 's/^[[:space:]]+inet[[:space:]]+(([0-9]+.){3})[^[:space:]]+[[:space:]].*/\17/p'):2375" # 'tcp://10.35.254.7:2375'
 

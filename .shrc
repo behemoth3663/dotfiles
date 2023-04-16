@@ -54,7 +54,7 @@ case "${OSTYPE}" in
 		# shellcheck disable=SC2139
 		alias portver="/usr/sbin/portsnap fetch update && ${PREFIX}/sbin/pkg-static version -vL= | /usr/bin/grep --extended-regex --invert-match '[[:space:]]>[[:space:]]|[[:space:]]orphaned[:[:space:]]+local/'"
 		# shellcheck disable=SC2139
-		alias portupg="/usr/bin/nice -n32 ${PREFIX}/sbin/portmaster --no-confirm --no-term-title -Bdgty -x doas -x sudo"
+		alias portupg="time /usr/bin/nice -n32 ${PREFIX}/sbin/portmaster --no-confirm --no-term-title -Bdgty -x doas -x sudo"
 		# shellcheck disable=SC2154,SC2139
 		alias port_extract='test "${PWD##/usr/ports/*/}" != "${PWD}" && /bin/rm -rf -- Makefile.local && pkg_origin=$(/usr/bin/make -V PKGORIGIN) && test -n "${pkg_origin}" && pkg_pwd="${PWD}" && cd .. && '"${PREFIX}"'/bin/doas /bin/rm -rf -- "${pkg_pwd##*/}" && /usr/sbin/portsnap extract "${pkg_origin}/" && cd "${pkg_pwd}"'
 
@@ -173,7 +173,7 @@ alias gibras="/usr/bin/env GIT_PAGER='${GIT_PAGER:-${PAGER:-/usr/bin/less}} --qu
 # shellcheck disable=SC2139
 alias giche="${GIT} checkout"
 # shellcheck disable=SC2139
-alias gichem="${GIT}"' checkout $('"${GIT}"' branch --remotes --list "origin/ma*" | sed -rn "s,^[[:space:]]*origin/(master|main)$,\1,p;q")'
+alias gichem="${GIT}"' checkout $('"${GIT}"' symbolic-ref refs/remotes/origin/HEAD | sed -n "s|.*/||p")'
 # shellcheck disable=SC2139
 alias gicam="${GIT} commit --verbose --all --message"
 # shellcheck disable=SC2139
@@ -245,8 +245,8 @@ pdiff() {
 gibradel() {
 	while [ -n "${1}" ]; do
 		test "${1}" != "$(${GIT} branch --show-current)" ||
-			${GIT} checkout "$(${GIT} branch --remotes --list 'origin/ma*' |
-				sed -rn 's,^[[:space:]]*origin/(master|main)$,\1,p;q')"
+			${GIT} checkout "$(${GIT} symbolic-ref refs/remotes/origin/HEAD |
+				sed -n 's|.*/||p')"
 		${GIT} branch --delete --force "${1}"
 		${GIT} push origin --delete "${1}"
 		shift
@@ -283,6 +283,56 @@ i() {
 	# shellcheck disable=SC2048,SC2086
 	/usr/bin/grep --extended-regexp --ignore-case --color=always ${*} |
 		/usr/bin/less --no-init --chop-long-lines --RAW-CONTROL-CHARS --quit-if-one-screen
+}
+
+puthash() {
+	local file="${1}" terraform_source modules_directory git_root curdir hash new_terraform_source
+	test -n "${file}" || return 201
+
+	terraform_source=$(hcledit --file "${file}" attribute get terraform.source) || return 202
+	test -n "${terraform_source}" || return 202
+
+	#"github.com/Aer-Lingus/infrastructure-modules//genstats/tasks?ref=v0.272.67" -> infrastructure-modules
+	modules_directory=$(echo "${terraform_source}" | sed -rn 's|.*/([^/]+)//.*|\1|p') || return 203 #'
+	git_root=$(git rev-parse --show-toplevel) || return 204
+
+	curdir=$(pwd)
+	cd "${git_root}/../${modules_directory}" || return 205
+	hash=$(env GIT_PAGER= git log --max-count=1 --pretty=%h) || return 206
+	cd "${curdir}" || return 205
+	test -n "${hash}" || return 206
+
+	new_terraform_source=$(echo "${terraform_source}" | sed -rn "s|(.*\?ref=)([v.0-9a-f]+)(.*)|\1${hash}\3|p") || return 207 #"
+	test -n "${new_terraform_source}" || return 207
+
+	test "${terraform_source}" != "${new_terraform_source}" &&
+		hcledit --file "${file}" --update attribute set terraform.source "${new_terraform_source}" &&
+		echo "${hash}"
+}
+
+gfixup() {
+	local main_branch hash
+
+	main_branch=$(git symbolic-ref refs/remotes/origin/HEAD | sed -n 's|.*/||p') || return 201
+	test -n "${main_branch}" || return 201
+
+	hash=$(git cherry "${main_branch}" | sed 's/.*[[:space:]]//;q') || return 202
+	test -n "${hash}" || return 202
+
+	git reset --soft "${hash}" && git commit --all --amend --no-edit && echo "${hash}"
+}
+
+getag() {
+	test -n "${1}" || return 201
+
+	local main_branch hash
+	main_branch=$(git symbolic-ref refs/remotes/origin/HEAD | sed -n 's|.*/remotes/||p') || return 202
+	test -n "${main_branch}" || return 202
+
+	hash=$(env GIT_PAGER= git log --max-count=1 --pretty=%h --invert-grep --extended-regexp --grep='\[(ci[[:space:]]+skip|skip[[:space:]]+ci)\]' "${main_branch}" -- "${1}") || return 203 #'
+	test -n "${hash}" || return 203
+
+	git tag --contains "${hash}" --sort version:refname | head -1
 }
 
 unset CURL

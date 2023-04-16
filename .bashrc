@@ -7,6 +7,7 @@ HISTCONTROL='ignoreboth:erasedups'
 HISTIGNORE='history:exit:logout:cd:pwd:man:ls:ll:l:*shutdown:sd:deco:mc:startx'
 
 RESET="\[\033[0m\]"
+BOLD="\[\033[1m\]"
 GRAY="\[\033[1;30m\]"
 RED="\[\033[1;31m\]"
 GREEN="\[\033[0;32m\]"
@@ -16,7 +17,8 @@ CYAN="\[\033[1;36m\]"
 
 _get_current_git_branch() {
 	local s
-	s=$(git branch --show-current 2>/dev/null) && printf ' \033[35m%s ' "${s}"
+#	s=$(git branch --show-current 2>/dev/null) && printf ' \033[35m%s\033[0m ' "${s}"
+	s=$(git branch --show-current 2>/dev/null) && echo -n " ${s} "
 }
 
 #NO_COLOR_PS1=
@@ -28,7 +30,7 @@ if [ -n "${SSH_CLIENT}" ] || [ -n "${SSH_TTY}" ]; then
 fi
 
 #PS1="${RESET}\u${PS1_HOST}${CYAN}:${RESET}\w${PS1_TAIL_COLOR}>${RESET} "
-PS1="${RESET}\u${PS1_HOST}${CYAN}:${RESET}\w\$(_get_current_git_branch)${PS1_TAIL_COLOR}>${RESET} "
+PS1="${RESET}\u${PS1_HOST}${CYAN}:${RESET}${BOLD}\w${RESET}\$(_get_current_git_branch)${PS1_TAIL_COLOR}>${RESET} "
 test -z "${NO_COLOR_PS1}" || PS1="\u${PS1_HOST}:\w> "
 
 if [ "${UID}" -eq 0 ]; then
@@ -38,7 +40,7 @@ if [ "${UID}" -eq 0 ]; then
 	test -z "${NO_COLOR_PS1}" || PS1='\h:\w \$ '
 fi
 
-unset PS1_HOST PS1_TAIL_COLOR NO_COLOR_PS1 RESET GRAY RED GREEN YELLOW BLUE CYAN #MAGENTA WHITE
+unset PS1_HOST PS1_TAIL_COLOR NO_COLOR_PS1 RESET BOLD GRAY RED GREEN YELLOW BLUE CYAN #MAGENTA WHITE
 
 case "${OSTYPE}" in
 	darwin*)
