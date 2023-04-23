@@ -302,12 +302,12 @@ puthash() {
 	cd "${curdir}" || return 205
 	test -n "${hash}" || return 206
 
-	new_terraform_source=$(echo "${terraform_source}" | sed -rn "s|(.*\?ref=)([v.0-9a-f]+)(.*)|\1${hash}\3|p") || return 207 #"
+	new_terraform_source=$(echo "${terraform_source}" | sed -rn "s|(.*\?ref=)([^[:space:]\"]+)(.*)|\1${hash}\3|p") || return 207 #"
 	test -n "${new_terraform_source}" || return 207
 
 	test "${terraform_source}" != "${new_terraform_source}" &&
 		hcledit --file "${file}" --update attribute set terraform.source "${new_terraform_source}" &&
-		echo "${hash}"
+		echo "${hash}" >&2
 }
 
 gfixup() {

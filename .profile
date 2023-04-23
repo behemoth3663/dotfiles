@@ -1,3 +1,4 @@
+# shellcheck disable=SC2148
 # $FreeBSD: src/share/skel/dot.profile,v 1.21 2002/07/07 00:00:54 mp Exp $
 #
 # .profile - Bourne Shell startup script for login shells
@@ -47,10 +48,17 @@ PS1="${USER}@\\h:\\w \\$ "
 
 case "${OSTYPE}" in
 	freebsd*)
+		unset ip
 		# shellcheck disable=SC2046
-		set -- bridge0 #$(ifconfig -l ether)
-		# shellcheck disable=SC2155,SC2086
-		test -z "${1}" || export DOCKER_HOST="tcp://$(ifconfig ${1} | sed -rn 's/^[[:space:]]+inet[[:space:]]+(([0-9]+.){3})[^[:space:]]+[[:space:]].*/\17/p'):2375" # 'tcp://10.35.254.7:2375'
+		if set -- $(ifconfig bridge0 2>/dev/null); then
+			ip="${*}" && ip="${ip##* inet }" && ip="${ip%% netmask *}"
+		elif set -- $(ifconfig -l ether 2>/dev/null) && test -n "${1}" && set -- $(ifconfig "${1}" 2>/dev/null); then
+			ip="${*}" && ip="${ip##* inet }" && ip="${ip%% netmask *}"
+		fi
+		IFS='.'
+		# shellcheck disable=SC2086
+		set -- ${ip} && test -n "${4}" && export DOCKER_HOST="tcp://${1}.${2}.${3}.7:2375"
+		unset IFS ip
 
 		test -x "${EDITOR:=/usr/local/bin/mcedit}" || EDITOR='/usr/bin/ee'
 		export EDITOR
