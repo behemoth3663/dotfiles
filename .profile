@@ -50,14 +50,17 @@ case "${OSTYPE}" in
 	freebsd*)
 		unset ip
 		# shellcheck disable=SC2046
-		if set -- $(ifconfig bridge0 2>/dev/null); then
-			ip="${*}" && ip="${ip##* inet }" && ip="${ip%% netmask *}"
-		elif set -- $(ifconfig -l ether 2>/dev/null) && test -n "${1}" && set -- $(ifconfig "${1}" 2>/dev/null); then
-			ip="${*}" && ip="${ip##* inet }" && ip="${ip%% netmask *}"
+		set -- $(ifconfig bridge0 2>/dev/null)
+		if [ "${ip:=${*}}" != "${ip##* inet }" ]; then ip="${ip##* inet }"; else unset ip; fi
+		if [ "${ip}" != "${ip%% netmask *}" ]; then ip="${ip%% netmask *}"; else unset ip; fi
+		# shellcheck disable=SC2046
+		if [ -z "${ip}" ] && set -- $(ifconfig -l ether 2>/dev/null) && [ -n "${1}" ] && set -- $(ifconfig "${1}" 2>/dev/null); then
+			if [ "${ip:=${*}}" != "${ip##* inet }" ]; then ip="${ip##* inet }"; else unset ip; fi
+			if [ "${ip}" != "${ip%% netmask *}" ]; then ip="${ip%% netmask *}"; else unset ip; fi
 		fi
 		IFS='.'
 		# shellcheck disable=SC2086
-		set -- ${ip} && test -n "${4}" && export DOCKER_HOST="tcp://${1}.${2}.${3}.7:2375"
+		set -- ${ip} && test -n "${4}" && export DOCKER_HOST="tcp://${1}${IFS}${2}${IFS}${3}${IFS}7:2375"
 		unset IFS ip
 
 		test -x "${EDITOR:=/usr/local/bin/mcedit}" || EDITOR='/usr/bin/ee'
