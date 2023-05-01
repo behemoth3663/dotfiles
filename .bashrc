@@ -18,7 +18,7 @@ CYAN="\[\033[1;36m\]"
 _get_current_git_branch() {
 	local s
 #	s=$(git branch --show-current 2>/dev/null) && printf ' \033[35m%s\033[0m ' "${s}"
-	s=$(git branch --show-current 2>/dev/null) && echo -n " ${s} "
+	s=$(git branch --show-current 2>/dev/null) && printf ' %s ' "${s}"
 }
 
 #NO_COLOR_PS1=
