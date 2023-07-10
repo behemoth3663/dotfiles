@@ -6,15 +6,11 @@ readonly AWS_CONFIG_FILE="${HOME}/.aws/config"
 
 TMPFILE=$(mktemp "${TMPDIR:-/tmp}/${$}.XXXXXX") || exit 201
 readonly TMPFILE
-trap "rm -f -- ${TMPFILE}" INT TERM EXIT
+trap "rm -f -- ${TMPFILE}" HUP INT QUIT ILL TRAP BUS TERM EXIT
 
 _exit() {
 	local rc="${1:-1}"
-	if [ "${rc}" -gt 0 ]; then
-		shift
-	else
-		rc=1
-	fi
+	test "${rc}" -gt 0 2>/dev/null && shift || rc=1
 	echo "${*}" >&2
 	exit "${rc}"
 }

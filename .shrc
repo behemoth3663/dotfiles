@@ -19,7 +19,9 @@ set -o emacs
 alias h='fc -l'
 alias j='jobs'
 alias ..='cd ..'
-alias cd..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+alias .....='cd ../../../..'
 alias n32='/usr/bin/nice -n32'
 
 alias pi='/sbin/ping -n -c5 -s16 -W5000 8.8.8.8'
@@ -173,13 +175,14 @@ alias gibras="/usr/bin/env GIT_PAGER='${GIT_PAGER:-${PAGER:-/usr/bin/less}} --qu
 # shellcheck disable=SC2139
 alias giche="${GIT} checkout"
 # shellcheck disable=SC2139
-alias gichem="${GIT}"' checkout $('"${GIT}"' symbolic-ref refs/remotes/origin/HEAD | sed -n "s|.*/||p")'
+#alias gichem="${GIT}"' checkout $('"${GIT}"' branch | sed -r -e "/^[[:space:]*]+(main|master)$/!d" -e "s/^[[:space:]*]+//" -eq)'
+alias gichem="${GIT}"' checkout $('"${GIT}"' branch --no-color --list "ma*" | sed -rn "s,^\*?[[:space:]]+(main|master)$,\1,p;q")'
 # shellcheck disable=SC2139
 alias gicam="${GIT} commit --verbose --all --message"
 # shellcheck disable=SC2139
 alias gigog="${GIT}"' log --graph --abbrev-commit --decorate --all --format=format:"%C(bold blue)%H%C(reset) - %C(bold cyan)%aD%C(dim white) - %an%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n %C(white)%s%C(reset)"'
 # shellcheck disable=SC2139
-alias gilog="${GIT}"' log --graph --pretty=format:"%C(bold blue)%h%C(dim white) [%C(bold cyan)%ai%C(dim white)] <%C(bold green)%ae%C(dim white)>%C(bold yellow)%d%C(reset) %s"'
+alias gilog="${GIT}"' log --graph --pretty=format:"%C(bold blue)%h %C(dim cyan)%ai %C(bold green)%ae%C(reset) %s %C(dim yellow)%d"'
 #alias gilog='${GIT} log --graph --pretty=format:"%C(bold blue)%h%C(dim white) [%C(bold cyan)%ai%C(dim white)] <%C(bold green)%ae%C(dim white)>%C(reset) %s"'
 #alias gilog='${GIT} log --graph --pretty=format:"%h [%ai] <%ae> %s"'
 #log --graph --pretty=format:'%Cred%h %C(green)%t %Creset %C(red)%ad %Creset-%C(yellow)%d%Creset %s %n      %N %-GG' --date=short
@@ -194,7 +197,7 @@ alias gista="${GIT} status --short --branch --untracked-files=no"
 # shellcheck disable=SC2139
 alias gdiff="${GIT} diff"
 # shellcheck disable=SC2139
-alias gfetch="${GIT} fetch --verbose --all --append --prune"
+alias gfetch="${GIT}"' checkout $('"${GIT}"' branch --no-color --list "ma*" | sed -rn "s,^\*?[[:space:]]+(main|master)$,\1,p;q")'" && ${GIT} fetch --all --append --prune && ${GIT} pull --all"
 # shellcheck disable=SC2139
 alias gpull="${GIT} pull --verbose --all"
 # shellcheck disable=SC2139
@@ -220,7 +223,7 @@ md() {
 
 cdiff() {
 	# shellcheck disable=SC2048,SC2086
-	test -z "${1}" || "${PREFIX}/bin/colordiff" -duw ${*} |
+	test -z "${1}" || "${PREFIX}/bin/colordiff" --text --minimal -uw ${*} |
 		/usr/bin/less --no-init --chop-long-lines --RAW-CONTROL-CHARS
 }
 
@@ -245,8 +248,8 @@ pdiff() {
 gibradel() {
 	while [ -n "${1}" ]; do
 		test "${1}" != "$(${GIT} branch --show-current)" ||
-			${GIT} checkout "$(${GIT} symbolic-ref refs/remotes/origin/HEAD |
-				sed -n 's|.*/||p')"
+			${GIT} checkout "$(${GIT} branch --no-color --list 'ma*' |
+				sed -rn 's,^\*?[[:space:]]+(main|master)$,\1,p;q')"
 		${GIT} branch --delete --force "${1}"
 		${GIT} push origin --delete "${1}"
 		shift
@@ -313,26 +316,25 @@ puthash() {
 gfixup() {
 	local main_branch hash
 
-	main_branch=$(git symbolic-ref refs/remotes/origin/HEAD | sed -n 's|.*/||p') || return 201
+	main_branch="$(git branch --no-color --list 'ma*' | sed -rn 's,^\*?[[:space:]]+(main|master)$,\1,p;q')"
 	test -n "${main_branch}" || return 201
 
-	hash=$(git cherry "${main_branch}" | sed 's/.*[[:space:]]//;q') || return 202
-	test -n "${hash}" || return 202
+	hash=$(git cherry "${main_branch}" | sed 's/.*[[:space:]]//;q')
+	test -n "${hash}" || hash=$(git rev-parse --short HEAD) || return 202
+	test -n "${hash}" || return 203
 
-	git reset --soft "${hash}" && git commit --all --amend --no-edit && echo "${hash}"
+	git reset --soft "${hash}" && git commit --all --amend --no-edit
 }
 
 getag() {
-	test -n "${1}" || return 201
-
 	local main_branch hash
-	main_branch=$(git symbolic-ref refs/remotes/origin/HEAD | sed -n 's|.*/remotes/||p') || return 202
-	test -n "${main_branch}" || return 202
+	main_branch="$(git branch --no-color --list 'ma*' | sed -rn 's,^\*?[[:space:]]+(main|master)$,\1,p;q')"
+	test -n "${main_branch}" || return 201
 
-	hash=$(env GIT_PAGER= git log --max-count=1 --pretty=%h --invert-grep --extended-regexp --grep='\[(ci[[:space:]]+skip|skip[[:space:]]+ci)\]' "${main_branch}" -- "${1}") || return 203 #'
-	test -n "${hash}" || return 203
+	hash=$(env GIT_PAGER= git log --max-count=1 --pretty=%h --invert-grep --extended-regexp --grep='\[(ci[[:space:]]+skip|skip[[:space:]]+ci)\]' "${main_branch}" -- "${1:-.}") || return 203 #'
+	test -n "${hash}" || return 202
 
-	git tag --contains "${hash}" --sort version:refname | head -1
+	git tag --contains "${hash}" --sort version:refname | sed -r '/^v[[:digit:].]+$/!d;q'
 }
 
 unset CURL
