@@ -65,8 +65,9 @@ case "${OSTYPE}" in
 		alias mkcfg="${PREFIX}/bin/doas /usr/bin/make config"
 		# shellcheck disable=SC2139
 		alias mkcfgr="/usr/bin/nice -n32 ${PREFIX}/bin/doas /usr/bin/make config-recursive"
+		#alias mkcal="{ WRKDIR=\$(/usr/bin/make -V WRKDIR) && test -d \"\${WRKDIR}\" && /usr/bin/nice -n32 ${PREFIX}/bin/doas /usr/bin/find \"\${WRKDIR}\" -mindepth 2 -maxdepth 2 -name '.*' -uid 0 -exec /usr/sbin/chown -v \$(/usr/bin/id -u) {} \+ && /usr/bin/nice -n32 ${PREFIX}/bin/doas /bin/rm -rf -- \"\${WRKDIR}/pkg\" \"\${WRKDIR}/.metadir\"; set -o pipefail && /usr/bin/time /usr/bin/nice -n32 /usr/bin/make clean all 2>&1 | /usr/bin/tee build.log; }"
 		# shellcheck disable=SC2139
-		alias mkcal="{ WRKDIR=\$(/usr/bin/make -V WRKDIR) && test -d \"\${WRKDIR}\" && /usr/bin/nice -n32 ${PREFIX}/bin/doas /usr/bin/find \"\${WRKDIR}\" -mindepth 2 -maxdepth 2 -name '.*' -uid 0 -exec /usr/sbin/chown -v \$(/usr/bin/id -u) {} \+ && /usr/bin/nice -n32 ${PREFIX}/bin/doas /bin/rm -rf -- \"\${WRKDIR}/pkg\" \"\${WRKDIR}/.metadir\"; set -o pipefail && /usr/bin/time /usr/bin/nice -n32 /usr/bin/make clean all 2>&1 | /usr/bin/tee build.log; }"
+		alias mkcal="${PREFIX}/bin/doas /usr/bin/make clean && set -o pipefail && /usr/bin/time /usr/bin/nice -n32 /usr/bin/make all 2>&1 | /usr/bin/tee build.log"
 		# shellcheck disable=SC2139
 		alias instpc="/usr/bin/nice -n32 ${PREFIX}/bin/doas /usr/bin/make package deinstall install clean"
 		alias zfsget='/sbin/zfs get mountpoint,canmount,mounted,checksum,compression,compressratio,dedup,atime,devices,exec,setuid,xattr,readonly,primarycache,secondarycache,logbias,sync,volsize,volblocksize'
