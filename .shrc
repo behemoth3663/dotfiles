@@ -293,6 +293,11 @@ puthash() {
 	local file="${1}" terraform_source modules_directory git_root curdir hash new_terraform_source
 	test -n "${file}" || return 201
 
+	if [ -d "${file}" ]; then
+		while [ "${file}" != "${file%/}" ]; do file="${file%/}"; done
+		file="${file}/terragrunt.hcl"
+	fi
+
 	terraform_source=$(hcledit --file "${file}" attribute get terraform.source) || return 202
 	test -n "${terraform_source}" || return 202
 
