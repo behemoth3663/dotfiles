@@ -151,11 +151,10 @@ esac
 
 alias m='/usr/bin/less --no-init --chop-long-lines --RAW-CONTROL-CHARS'
 if [ -x "${PREFIX}/bin/bat" ]; then
-	export BAT_PAGER='/usr/bin/less --no-init --chop-long-lines --RAW-CONTROL-CHARS'
 	# shellcheck disable=SC2139
-	alias m="${PREFIX}/bin/bat --plain --wrap never"
+	alias m="${PREFIX}/bin/bat --pager '/usr/bin/less --no-init --chop-long-lines --RAW-CONTROL-CHARS' --theme=ansi --plain --wrap never"
 	# shellcheck disable=SC2139
-	alias cat="/usr/bin/env BAT_PAGER='${BAT_PAGER} --quit-if-one-screen' ${PREFIX}/bin/bat --plain"
+	alias cat="${PREFIX}/bin/bat --pager '/usr/bin/less --no-init --chop-long-lines --RAW-CONTROL-CHARS --quit-if-one-screen' --theme=ansi --plain"
 fi
 
 # shellcheck disable=SC2139
