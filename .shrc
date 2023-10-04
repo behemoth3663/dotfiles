@@ -264,11 +264,43 @@ gicd() {
 
 pkg_ls_bin() {
 	# можно дополнить автоматическим определением директории порта по /usr/ports/* при пустом ${1}
-	local pkgs
-	# shellcheck disable=SC2048,SC2086
-	test -n "${1}" && pkgs=$(${PREFIX}/sbin/pkg-static query '%n' ${*}) && test -n "${pkgs}" || return 1
-	# shellcheck disable=SC2046,SC2086
-	/usr/bin/env LC_TIME='en_US.UTF-8' /bin/ls -lSG $(${PREFIX}/sbin/pkg-static query '%Fp' ${pkgs} | /usr/bin/xargs /usr/bin/file | /usr/bin/sed -rn 's/([^:]+):[[:space:]]+ELF[[:space:]].*/\1/p') #'
+	local p pkgs pkg_name
+	if [ -z "${1}" ]; then
+		# shellcheck disable=SC2295
+		if [ "${PWD#$(make -V PORTSDIR)/}" = "${PWD}" ]; then
+			echo "Package name cannot be found (rc=201)." >&2
+			return 201
+		fi
+
+		# shellcheck disable=SC2016
+		pkg_name=$(make -v '${PKGNAMEPREFIX}${PORTNAME}${PKGNAMESUFFIX}')
+		if [ -z "${pkg_name}" ]; then
+			echo "Package name cannot be found (rc=202)." >&2
+			return 202
+		fi
+	fi
+
+	# shellcheck disable=SC2048
+	for p in ${*:-${pkg_name}}; do
+		p=$("${PREFIX}/sbin/pkg-static" query --evaluate "%n ~ *${p}*" '%n') &&
+			test -n "${p}" && pkgs="${pkgs} ${p}"
+	done
+	if [ -z "${pkgs}" ]; then
+		echo "Package(s) \"${*}\" not found." >&2
+		return 203
+	fi
+
+	# shellcheck disable=SC2086
+	pkgs=$("${PREFIX}/sbin/pkg-static" query '%Fp' ${pkgs} |
+		/usr/bin/xargs /usr/bin/file |
+		/usr/bin/sed -rn 's/([^:]+):[[:space:]]+ELF[[:space:]].*/\1/p')
+	if [ -z "${pkgs}" ]; then
+		echo "Binaries within package(s) \"${*}\" not found." >&2
+		return 204
+	fi
+
+	# shellcheck disable=SC2086
+	/usr/bin/env LC_TIME='en_US.UTF-8' /bin/ls -lSG ${pkgs}
 }
 
 ll() {
