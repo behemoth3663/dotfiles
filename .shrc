@@ -57,6 +57,8 @@ case "${OSTYPE}" in
 		alias portver="portsnap fetch update && ${PREFIX}/sbin/pkg-static version -vL= | /usr/bin/grep --extended-regex --invert-match '[[:space:]]>[[:space:]]|[[:space:]]orphaned[:[:space:]]+local/'"
 		# shellcheck disable=SC2139
 		alias portupg="time /usr/bin/nice -n32 ${PREFIX}/sbin/portmaster --no-confirm --no-term-title -Bdgty -x doas -x sudo"
+		alias pkgupg="time /usr/bin/nice -n32 ${PREFIX}/sbin/portmaster --no-confirm --no-term-title -Bdty --packages-only --packages-local --local-packagedir=$(make -C / -V PORTSDIR)/packages"
+
 		# shellcheck disable=SC2154,SC2139
 		alias port_extract='test "${PWD##/usr/ports/*/}" != "${PWD}" && /bin/rm -rf -- Makefile.local && pkg_origin=$(/usr/bin/make -V PKGORIGIN) && test -n "${pkg_origin}" && pkg_pwd="${PWD}" && cd .. && '"${PREFIX}"'/bin/doas /bin/rm -rf -- "${pkg_pwd##*/}" && portsnap extract "${pkg_origin}/" && cd "${pkg_pwd}"'
 
