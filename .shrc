@@ -178,7 +178,7 @@ alias gibras="/usr/bin/env GIT_PAGER='${GIT_PAGER:-${PAGER:-/usr/bin/less}} --qu
 alias giche="${GIT} checkout"
 # shellcheck disable=SC2139
 #alias gichem="${GIT}"' checkout $('"${GIT}"' branch | sed -r -e "/^[[:space:]*]+(main|master)$/!d" -e "s/^[[:space:]*]+//" -eq)'
-alias gichem="${GIT}"' checkout $('"${GIT}"' branch --no-color --list "ma*" | sed -rn "s,^\*?[[:space:]]+(main|master)$,\1,p;q")'
+alias gichem="${GIT}"' checkout $('"${GIT}"' --no-pager branch --no-color --list main master | sed -rn "s/^\*?[[:space:]]+//p;q")'
 # shellcheck disable=SC2139
 alias gicam="${GIT} commit --verbose --all --message"
 # shellcheck disable=SC2139
@@ -194,12 +194,13 @@ alias gils="${GIT} ls-files"
 alias girebi="${GIT} rebase -i"
 # shellcheck disable=SC2139
 alias girebi2="${GIT} rebase -i HEAD~2"
+alias gireup="${GIT} fetch origin && ${GIT}"' rebase origin/$('"${GIT}"' --no-pager branch --no-color --list main master | sed -rn "s/^\*?[[:space:]]+//p;q")'
 # shellcheck disable=SC2139
 alias gista="${GIT} status --short --branch --untracked-files=no"
 # shellcheck disable=SC2139
 alias gdiff="${GIT} diff"
 # shellcheck disable=SC2139
-alias gfetch="${GIT}"' checkout $('"${GIT}"' branch --no-color --list "ma*" | sed -rn "s,^\*?[[:space:]]+(main|master)$,\1,p;q")'" && ${GIT} fetch --all --append --prune && ${GIT} pull --all"
+alias gfetch="${GIT}"' checkout $('"${GIT}"' --no-pager branch --no-color --list main master | sed -rn "s/^\*?[[:space:]]+//p;q")'" && ${GIT} fetch --all --append --prune && ${GIT} pull --all"
 # shellcheck disable=SC2139
 alias gpull="${GIT} pull --verbose --all"
 # shellcheck disable=SC2139
@@ -249,11 +250,12 @@ pdiff() {
 
 gibradel() {
 	while [ -n "${1}" ]; do
-		test "${1}" != "$(${GIT} branch --show-current)" ||
-			${GIT} checkout "$(${GIT} branch --no-color --list 'ma*' |
-				sed -rn 's,^\*?[[:space:]]+(main|master)$,\1,p;q')"
-		${GIT} branch --delete --force "${1}"
-		${GIT} push origin --delete "${1}"
+		test "${1}" != "$(git branch --show-current)" ||
+			git checkout "$(
+				git --no-pager branch --no-color --list main master | sed -rn 's/^\*?[[:space:]]+//p;q'
+			)"
+		git branch --delete --force "${1}"
+		git push origin --delete "${1}"
 		shift
 	done
 }
@@ -261,7 +263,7 @@ gibradel() {
 gicd() {
 	local d
 	# shellcheck disable=SC2164
-	d=$(${GIT} rev-parse --show-toplevel) && cd "${d}"
+	d=$(git rev-parse --show-toplevel) && cd "${d}"
 }
 
 pkg_ls_bin() {
@@ -308,7 +310,7 @@ pkg_ls_bin() {
 ll() {
 	if [ -x "${PREFIX}/bin/exa" ]; then
 		# shellcheck disable=SC2048,SC2086
-		"${PREFIX}/bin/exa" --all --long --group-directories-first --bytes --links --time-style long-iso --color always ${*} |
+		"${PREFIX}/bin/exa" --all --long --group-directories-first --bytes --links --group --time-style long-iso --color always ${*} |
 			/usr/bin/less --no-init --chop-long-lines --RAW-CONTROL-CHARS --quit-if-one-screen
 	else
 		# shellcheck disable=SC2048,SC2086
@@ -323,29 +325,36 @@ i() {
 }
 
 puthash() {
-	local file="${1}" terraform_source modules_directory git_root curdir hash new_terraform_source
-	test -n "${file}" || return 201
+	local file="${1:-.}" terraform_source modules_directory git_root curdir hash new_terraform_source
 
 	if [ -d "${file}" ]; then
 		while [ "${file}" != "${file%/}" ]; do file="${file%/}"; done
 		file="${file}/terragrunt.hcl"
 	fi
 
-	terraform_source=$(hcledit --file "${file}" attribute get terraform.source) || return 202
+	terraform_source=$(hcledit --file "${file}" attribute get terraform.source) || return 201
 	test -n "${terraform_source}" || return 202
 
 	#"github.com/Aer-Lingus/infrastructure-modules//genstats/tasks?ref=v0.272.67" -> infrastructure-modules
 	modules_directory=$(echo "${terraform_source}" | sed -rn 's|.*/([^/]+)//.*|\1|p') || return 203 #'
 	git_root=$(git rev-parse --show-toplevel) || return 204
 
-	curdir=$(pwd)
-	cd "${git_root}/../${modules_directory}" || return 205
-	hash=$(env GIT_PAGER= git log --max-count=1 --pretty=%h) || return 206
-	cd "${curdir}" || return 205
-	test -n "${hash}" || return 206
+	curdir="$(pwd)"
+	if ! cd "${git_root}/../${modules_directory}" 2>/dev/null; then
+		while [ -n "${modules_directory}" ]; do
+			modules_directory="${modules_directory#?}"
+			test -d "${git_root}/../${modules_directory}" && break
+		done
+		test -n "${modules_directory}" || return 205
+		cd "${git_root}/../${modules_directory}" || return 206
+	fi
 
-	new_terraform_source=$(echo "${terraform_source}" | sed -rn "s|(.*\?ref=)([^[:space:]\"]+)(.*)|\1${hash}\3|p") || return 207 #"
-	test -n "${new_terraform_source}" || return 207
+	hash=$(git --no-pager log --no-color --max-count=1 --pretty=%h) || return 207
+	cd "${curdir}" || return 208
+	test -n "${hash}" || return 209
+
+	new_terraform_source=$(echo "${terraform_source}" | sed -rn "s|(.*\?ref=)([^[:space:]\"]+)(.*)|\1${hash}\3|p") || return 210 #"
+	test -n "${new_terraform_source}" || return 211
 
 	test "${terraform_source}" != "${new_terraform_source}" &&
 		hcledit --file "${file}" --update attribute set terraform.source "${new_terraform_source}" &&
@@ -358,14 +367,14 @@ gfixup() {
 	branch="$(git --no-pager branch --no-color --show-current)"
 	test -n "${branch}" || return 201
 
-	hash=$(git --no-pager log --no-color --max-count=1 --pretty=%h "${branch}")
+	hash="$(git --no-pager log --no-color --max-count=1 --pretty=%h ${branch})"
 	test -n "${hash}" || return 202
 
-	branch="$(git --no-pager branch --no-color --list 'ma*' | sed -rn 's,^\*?[[:space:]]+(main|master)$,\1,p;q')"
+	branch="$(git --no-pager branch --no-color --list main master | sed -rn 's/^\*?[[:space:]]+//p;q')"
 	test -n "${branch}" || return 203
 
-	hash=$(git --no-pager cherry "${branch}" | sed 's/.*[[:space:]]//;q')
-	test -n "${hash}" || hash=$(git --no-pager rev-parse --short HEAD) || return 204
+	hash="$(git --no-pager cherry ${branch} | sed 's/.*[[:space:]]//;q')"
+	test -n "${hash}" || hash="$(git --no-pager rev-parse --short HEAD)" || return 204
 	test -n "${hash}" || return 205
 
 	git --no-pager reset --soft "${hash}" && git --no-pager commit --all --amend --no-edit
@@ -373,10 +382,10 @@ gfixup() {
 
 getag() {
 	local main_branch hash
-	main_branch="$(git branch --no-color --list 'ma*' | sed -rn 's,^\*?[[:space:]]+(main|master)$,\1,p;q')"
+	main_branch="$(git --no-pager branch --no-color --list main master | sed -rn 's/^\*?[[:space:]]+//p;q')"
 	test -n "${main_branch}" || return 201
 
-	hash=$(env GIT_PAGER= git log --max-count=1 --pretty=%h --invert-grep --extended-regexp --grep='\[(ci[[:space:]]+skip|skip[[:space:]]+ci)\]' "${main_branch}" -- "${1:-.}") || return 203 #'
+	hash=$(git --no-pager log --max-count=1 --pretty=%h --invert-grep --extended-regexp --grep='\[(ci[[:space:]]+skip|skip[[:space:]]+ci)\]' "${main_branch}" -- "${1:-.}") || return 203 #'
 	test -n "${hash}" || return 202
 
 	git tag --contains "${hash}" --sort version:refname | sed -r '/^v[[:digit:].]+$/!d;q'
