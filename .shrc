@@ -194,7 +194,8 @@ alias gils="${GIT} ls-files"
 alias girebi="${GIT} rebase -i"
 # shellcheck disable=SC2139
 alias girebi2="${GIT} rebase -i HEAD~2"
-alias gireup="${GIT} fetch origin && ${GIT}"' rebase origin/$('"${GIT}"' --no-pager branch --no-color --list main master | sed -rn "s/^\*?[[:space:]]+//p;q")'
+#git switch main && git pull --prune && git switch - && git -c rebase.autoStash=true rebase main
+alias gireup="${GIT} fetch origin && ${GIT}"' -c rebase.autoStash=true rebase origin/$('"${GIT}"' --no-pager branch --no-color --list main master | sed -rn "s/^\*?[[:space:]]+//p;q")'
 # shellcheck disable=SC2139
 alias gista="${GIT} status --short --branch --untracked-files=no"
 # shellcheck disable=SC2139
@@ -225,8 +226,9 @@ md() {
 }
 
 cdiff() {
+#	test -z "${1}" || "${PREFIX}/bin/colordiff" --text --minimal -uw ${*} |
 	# shellcheck disable=SC2048,SC2086
-	test -z "${1}" || "${PREFIX}/bin/colordiff" --text --minimal -uw ${*} |
+	test -z "${1}" || /usr/bin/diff --color=always --text --minimal -uw ${*} |
 		/usr/bin/less --no-init --chop-long-lines --RAW-CONTROL-CHARS
 }
 
