@@ -19,9 +19,8 @@ set -o emacs
 alias h='fc -l'
 alias j='jobs'
 alias ..='cd ..'
-alias ...='cd ../..'
-alias ....='cd ../../..'
-alias .....='cd ../../../..'
+alias ....='cd ../..'
+alias ......='cd ../../..'
 alias n32='/usr/bin/nice -n32'
 
 alias pi='/sbin/ping -n -c5 -s16 -W5000 8.8.8.8'
@@ -159,8 +158,7 @@ if [ -x "${PREFIX}/bin/bat" ]; then
 fi
 
 # shellcheck disable=SC2139
-alias l="${PREFIX}/bin/exa --long --group-directories-first --bytes"
-test -x "${PREFIX}/bin/exa" || alias l='/bin/ls -lGp'
+test -x "${PREFIX}/bin/exa" && alias l="${PREFIX}/bin/exa --long --group-directories-first --bytes" || alias l='/bin/ls -lGp'
 
 # shellcheck disable=SC2139
 alias tmux="${PREFIX}/bin/tmux attach || ${PREFIX}/bin/tmux new"
@@ -225,17 +223,33 @@ md() {
 }
 
 cdiff() {
-#	test -z "${1}" || "${PREFIX}/bin/colordiff" --text --minimal -uw ${*} |
-	# shellcheck disable=SC2048,SC2086
-	test -z "${1}" || /usr/bin/diff --color=always --text --minimal -uw ${*} |
-		/usr/bin/less --no-init --chop-long-lines --RAW-CONTROL-CHARS
+	test -n "${1}" || return 1
+
+	local from to args='--text -uw --minimal --show-c-function --color=always'
+	while [ -n "${1}" ]; do
+		args="${args}${from:+ }${from}"
+		from="${to}"
+		to="${1}"
+		shift
+	done
+
+	if [ -z "${from}" ]; then
+		from="${to}.orig"
+		if [ ! -e "${from}" ]; then
+			from="${to}.bak"
+			test -e "${from}" || from=$(
+				find "$(dirname ${to})" -name "${to##*/}.*" | sort --numeric | head -1
+			)
+		fi
+	fi
+
+	/usr/bin/diff ${args} ${from} ${to} | /usr/bin/less --no-init --chop-long-lines --RAW-CONTROL-CHARS
 }
 
 pdiff() {
-	# можно дополнить поиском *.orig в текущей директории при пустом ${1}
 	test -n "${1}" || return 1
 
-	local from to args='-udp'
+	local from to args='-u --minimal --show-c-function'
 	while [ -n "${1}" ]; do
 		args="${args}${from:+ }${from}"
 		from="${to}"
@@ -245,7 +259,6 @@ pdiff() {
 
 	test -n "${from}" || from="${to}.orig"
 
-	# shellcheck disable=SC2086
 	/usr/bin/env TZ=UTC /usr/bin/diff ${args} ${from} ${to} | /usr/bin/sed -e '/^---/s|\.[0-9]* +0000$| UTC|' -e '/^+++/s|\([[:blank:]][-0-9:.+]*\)*$||'
 }
 
@@ -395,11 +408,9 @@ getags() {
 	main_branch="$(git --no-pager branch --no-color --list main master | sed -rn 's/^\*?[[:space:]]+//p;q')"
 	test -n "${main_branch}" || return 201
 
-	git --no-pager log --no-color --pretty=%h \
-		--invert-grep --extended-regexp --grep='\[(ci[[:space:]]+skip|skip[[:space:]]+ci)\]' \
-		"${main_branch}" -- "${1:-.}" | while read -r hash; do
-		git --no-pager tag --no-color --contains "${hash}" --sort version:refname | sed -r '/^v[[:digit:].]+$/!d;q'
-	done
+	git --no-pager log --no-color --pretty=%h "${main_branch}" -- "${1:-.}" | while read -r hash; do
+		git --no-pager tag --no-color --contains "${hash}" --sort version:refname | grep '^v[[:digit:]][[:digit:].]*$' | head -1
+	done | uniq
 }
 
 
