@@ -158,7 +158,8 @@ if [ -x "${PREFIX}/bin/bat" ]; then
 fi
 
 # shellcheck disable=SC2139
-test -x "${PREFIX}/bin/exa" && alias l="${PREFIX}/bin/exa --long --group-directories-first --bytes" || alias l='/bin/ls -lGp'
+#test -x "${PREFIX}/bin/exa" && alias l="${PREFIX}/bin/exa --long --group-directories-first --bytes" || alias l='/bin/ls -lGp'
+test -x "${PREFIX}/bin/eza" && alias l="${PREFIX}/bin/eza --long --group-directories-first --bytes" || alias l='/bin/ls -lGp'
 
 # shellcheck disable=SC2139
 alias tmux="${PREFIX}/bin/tmux attach || ${PREFIX}/bin/tmux new"
@@ -219,7 +220,7 @@ alias gitags="${GIT} ls-remote --tags origin"
 md() {
 	test -n "${1}" || ! echo "${PWD}" || return 1
 	# shellcheck disable=SC2164
-	/bin/mkdir -p "${1}" && cd "${1}"
+	/bin/mkdir -p -- ${@} && cd -- "${1}"
 }
 
 cdiff() {
@@ -277,7 +278,7 @@ gibradel() {
 gicd() {
 	local d
 	# shellcheck disable=SC2164
-	d=$(git rev-parse --show-toplevel) && cd "${d}"
+	d=$(git rev-parse --show-toplevel) && cd -- "${d}"
 }
 
 pkg_ls_bin() {
@@ -322,9 +323,9 @@ pkg_ls_bin() {
 }
 
 ll() {
-	if [ -x "${PREFIX}/bin/exa" ]; then
+	if [ -x "${PREFIX}/bin/eza" ]; then
 		# shellcheck disable=SC2048,SC2086
-		"${PREFIX}/bin/exa" --all --long --group-directories-first --bytes --links --group --time-style long-iso --color always ${*} |
+		"${PREFIX}/bin/eza" --all --long --group-directories-first --bytes --links --group --time-style long-iso --color always ${*} |
 			/usr/bin/less --no-init --chop-long-lines --RAW-CONTROL-CHARS --quit-if-one-screen
 	else
 		# shellcheck disable=SC2048,SC2086
@@ -339,40 +340,42 @@ i() {
 }
 
 puthash() {
-	local file="${1:-.}" terraform_source modules_directory git_root curdir hash new_terraform_source
+	local paths="${*}" file terraform_source modules_directory git_root curdir hash new_terraform_source
 
-	if [ -d "${file}" ]; then
-		while [ "${file}" != "${file%/}" ]; do file="${file%/}"; done
-		file="${file}/terragrunt.hcl"
-	fi
+	for file in ${paths:-.}; do
+		if [ -d "${file}" ]; then
+			while [ "${file}" != "${file%/}" ]; do file="${file%/}"; done
+			file="${file}/terragrunt.hcl"
+		fi
 
-	terraform_source=$(hcledit --file "${file}" attribute get terraform.source) || return 201
-	test -n "${terraform_source}" || return 202
+		terraform_source=$(hcledit --file "${file}" attribute get terraform.source) || return 201
+		test -n "${terraform_source}" || return 202
 
-	#"github.com/Aer-Lingus/infrastructure-modules//genstats/tasks?ref=v0.272.67" -> infrastructure-modules
-	modules_directory=$(echo "${terraform_source}" | sed -rn 's|.*/([^/]+)//.*|\1|p') || return 203 #'
-	git_root=$(git rev-parse --show-toplevel) || return 204
+		#"github.com/Aer-Lingus/infrastructure-modules//genstats/tasks?ref=v0.272.67" -> infrastructure-modules
+		modules_directory=$(echo "${terraform_source}" | sed -rn 's|.*/([^/]+)//.*|\1|p') || return 203 #'
+		git_root=$(git rev-parse --show-toplevel) || return 204
 
-	curdir="$(pwd)"
-	if ! cd "${git_root}/../${modules_directory}" 2>/dev/null; then
-		while [ -n "${modules_directory}" ]; do
-			modules_directory="${modules_directory#?}"
-			test -d "${git_root}/../${modules_directory}" && break
-		done
-		test -n "${modules_directory}" || return 205
-		cd "${git_root}/../${modules_directory}" || return 206
-	fi
+		curdir="$(pwd)"
+		if ! cd "${git_root}/../${modules_directory}" 2>/dev/null; then
+			while [ -n "${modules_directory}" ]; do
+				modules_directory="${modules_directory#?}"
+				test -d "${git_root}/../${modules_directory}" && break
+			done
+			test -n "${modules_directory}" || return 205
+			cd "${git_root}/../${modules_directory}" || return 206
+		fi
 
-	hash=$(git --no-pager log --no-color --max-count=1 --pretty=%h) || return 207
-	cd "${curdir}" || return 208
-	test -n "${hash}" || return 209
+		hash=$(git --no-pager log --no-color --max-count=1 --pretty=%h) || return 207
+		cd "${curdir}" || return 208
+		test -n "${hash}" || return 209
 
-	new_terraform_source=$(echo "${terraform_source}" | sed -rn "s|(.*\?ref=)([^[:space:]\"]+)(.*)|\1${hash}\3|p") || return 210 #"
-	test -n "${new_terraform_source}" || return 211
+		new_terraform_source=$(echo "${terraform_source}" | sed -rn "s|(.*\?ref=)([^[:space:]\"]+)(.*)|\1${hash}\3|p") || return 210 #"
+		test -n "${new_terraform_source}" || return 211
 
-	test "${terraform_source}" != "${new_terraform_source}" &&
-		hcledit --file "${file}" --update attribute set terraform.source "${new_terraform_source}" &&
-		echo "${hash}" >&2
+		test "${terraform_source}" != "${new_terraform_source}" &&
+			hcledit --file "${file}" --update attribute set terraform.source "${new_terraform_source}" &&
+			echo "${file}: ${hash}" >&2
+	done
 }
 
 gfixup() {
@@ -397,8 +400,8 @@ getag() {
 	main_branch="$(git --no-pager branch --no-color --list main master | sed -rn 's/^\*?[[:space:]]+//p;q')"
 	test -n "${main_branch}" || return 201
 
-	hash=$(git --no-pager log --no-color --max-count=1 --pretty=%h --invert-grep --extended-regexp --grep='\[(ci[[:space:]]+skip|skip[[:space:]]+ci)\]' "${main_branch}" -- "${1:-.}") || return 203 #'
-	test -n "${hash}" || return 202
+	hash=$(git --no-pager log --no-color --max-count=1 --pretty=%h "${main_branch}" -- "${1:-.}") || return 202 # git --no-pager log --no-color --max-count=1 --pretty=%h --invert-grep --extended-regexp --grep='\[(ci[[:space:]]+skip|skip[[:space:]]+ci)\]' "${main_branch}" -- "${1:-.}"
+	test -n "${hash}" || return 203
 
 	git --no-pager tag --no-color --contains "${hash}" --sort version:refname | sed -r '/^v[[:digit:].]+$/!d;q'
 }

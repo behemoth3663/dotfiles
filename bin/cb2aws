@@ -2,6 +2,7 @@
 
 # Update ~/.aws/config with clipboard data from https://ei.awsapps.com/start#/
 
+#readonly DEBUG=1
 readonly AWS_CONFIG_FILE="${HOME}/.aws/config"
 
 TMPFILE=$(mktemp "${TMPDIR:-/tmp}/${$}.XXXXXX") || exit 201
@@ -17,9 +18,9 @@ _exit() {
 }
 
 is_aws_keyword() {
-	test "_${1}" != '_aws_access_key_id' || return 0
-	test "_${1}" != '_aws_secret_access_key' || return 0
-	test "_${1}" != '_aws_session_token' || return 0
+	test "_${1}" != _aws_access_key_id || return 0
+	test "_${1}" != _aws_secret_access_key || return 0
+	test "_${1}" != _aws_session_token || return 0
 	return 1
 }
 
@@ -29,14 +30,16 @@ is_aws_keyword() {
 if [ -t 0 ]; then
 	# shellcheck disable=SC3028
 	if [ "${OSTYPE}" != "${OSTYPE#darwin}" ]; then
-		pbpaste >"${TMPFILE}"
+		pbpaste | tr -d '\r' >"${TMPFILE}"
 	else
-		xsel --clipboard --nodetach --output >"${TMPFILE}"
+		xsel --clipboard --nodetach --output | tr -d '\r' >"${TMPFILE}"
 	fi
 else
 	# save data from stdin
-	cat >"${TMPFILE}"
+	tr -d '\r' >"${TMPFILE}"
 fi
+
+test -z "${DEBUG}" || cat "${TMPFILE}" >&2
 
 while read -r s || test -n "${s}"; do
 	if [ "_${s}" != "_${s#*\[}" ]; then
@@ -50,11 +53,20 @@ while read -r s || test -n "${s}"; do
 	test -n "${2}" && is_aws_keyword "${1}" && eval "${1}='${2}'"
 done <"${TMPFILE}"
 
-test -n "${account_id}" || _exit "account_id not found"
+test -n "${account_id}" || _exit 'account_id not found'
 # shellcheck disable=SC2154
-test -n "${aws_access_key_id}" || _exit "aws_access_key_id not found"
+test -n "${aws_access_key_id}" || _exit 'aws_access_key_id not found'
 # shellcheck disable=SC2154
-test -n "${aws_secret_access_key}" || _exit "aws_secret_access_key not found"
+test -n "${aws_secret_access_key}" || _exit 'aws_secret_access_key not found'
+
+if [ -n "${DEBUG}" ]; then
+	echo >&2
+	echo "account_id=${account_id}" >&2
+	echo "account_suffix=${account_suffix}" >&2
+	echo "aws_access_key_id=${aws_access_key_id}" >&2
+	echo "aws_secret_access_key=${aws_secret_access_key}" >&2
+	echo "aws_session_token=${aws_session_token}" >&2
+fi
 
 printf '' >"${TMPFILE}"
 while read -r s; do
@@ -75,6 +87,8 @@ while read -r s; do
 	fi
 	echo "${s}" >>"${TMPFILE}"
 done <"${AWS_CONFIG_FILE}"
+
+test -z "${DEBUG}" || echo "patched=${patched}" >&2
 
 test -n "${patched}" || exit 0
 mv -f -- "${AWS_CONFIG_FILE}" "${AWS_CONFIG_FILE}.orig" &&
