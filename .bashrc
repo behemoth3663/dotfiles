@@ -22,8 +22,9 @@ CYAN="\[\033[1;36m\]"
 
 _get_current_git_branch() {
 	local s
-#	s=$(git branch --show-current 2>/dev/null) && printf ' \033[35m%s\033[0m ' "${s}"
-	s=$(git branch --show-current 2>/dev/null) && printf ' %s ' "${s}"
+	s=$(git rev-parse --abbrev-ref HEAD)
+	test "_${s}" = _HEAD && s=$(git rev-parse --short HEAD)
+	echo " ${s} "
 }
 
 #NO_COLOR_PS1=
@@ -35,7 +36,8 @@ if [ -n "${SSH_CLIENT}" ] || [ -n "${SSH_TTY}" ]; then
 fi
 
 #PS1="${RESET}\u${PS1_HOST}${CYAN}:${RESET}\w${PS1_TAIL_COLOR}>${RESET} "
-PS1="${RESET}\u${PS1_HOST}${CYAN}:${RESET}${BOLD}\w${RESET}\$(_get_current_git_branch)${PS1_TAIL_COLOR}>${RESET} "
+PS1="${RESET}\u${PS1_HOST}${CYAN}:${RESET}${BOLD}\w${RESET}\$(${HOME}/bin/gitbrash)${PS1_TAIL_COLOR}>${RESET} "
+test -x ${HOME}/bin/gitbrash || PS1="${RESET}\u${PS1_HOST}${CYAN}:${RESET}${BOLD}\w${RESET}\$(_get_current_git_branch)${PS1_TAIL_COLOR}>${RESET} "
 test -z "${NO_COLOR_PS1}" || PS1="\u${PS1_HOST}:\w> "
 
 if [ "${UID}" -eq 0 ]; then
