@@ -1,4 +1,3 @@
-# shellcheck disable=SC2148
 test -n "${O1VM_SUPRESS_SHRC_LOGGING}" || echo '.bashrc' >&2
 
 HISTSIZE='100000'
@@ -22,9 +21,9 @@ CYAN="\[\033[1;36m\]"
 
 _get_current_git_branch() {
 	local s
-	s=$(git rev-parse --abbrev-ref HEAD)
-	test "_${s}" = _HEAD && s=$(git rev-parse --short HEAD)
-	echo " ${s} "
+	s=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+	test "_${s}" = _HEAD && s=$(git rev-parse --short HEAD 2>/dev/null)
+	test -z "${s}" || echo " ${s} "
 }
 
 #NO_COLOR_PS1=
@@ -37,7 +36,7 @@ fi
 
 #PS1="${RESET}\u${PS1_HOST}${CYAN}:${RESET}\w${PS1_TAIL_COLOR}>${RESET} "
 PS1="${RESET}\u${PS1_HOST}${CYAN}:${RESET}${BOLD}\w${RESET}\$(${HOME}/bin/gitbrash)${PS1_TAIL_COLOR}>${RESET} "
-test -x ${HOME}/bin/gitbrash || PS1="${RESET}\u${PS1_HOST}${CYAN}:${RESET}${BOLD}\w${RESET}\$(_get_current_git_branch)${PS1_TAIL_COLOR}>${RESET} "
+test -x "${HOME}/bin/gitbrash" || PS1="${RESET}\u${PS1_HOST}${CYAN}:${RESET}${BOLD}\w${RESET}\$(_get_current_git_branch)${PS1_TAIL_COLOR}>${RESET} "
 test -z "${NO_COLOR_PS1}" || PS1="\u${PS1_HOST}:\w> "
 
 if [ "${UID}" -eq 0 ]; then
@@ -63,7 +62,6 @@ case "${OSTYPE}" in
 		test -s "${ENV:=${HOME}/.shrc}" && export ENV
 		;;
 	*)
-		# shellcheck disable=SC1090
 		test -s "${ENV:=${HOME}/.shrc}" && export ENV && . "${ENV}"
 		;;
 esac

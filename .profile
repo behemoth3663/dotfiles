@@ -1,4 +1,4 @@
-# shellcheck disable=SC2148
+#
 # $FreeBSD: src/share/skel/dot.profile,v 1.21 2002/07/07 00:00:54 mp Exp $
 #
 # .profile - Bourne Shell startup script for login shells
@@ -12,18 +12,14 @@ test -n "${O1VM_SUPRESS_SHRC_LOGGING}" || echo '.profile' >&2
 umask 22
 
 # make ${HOME}/bin first only
-# shellcheck disable=SC2295
 test "${PATH%:${HOME}/bin*}" = "${PATH}" || PATH="${PATH%:${HOME}/bin*}${PATH##*:${HOME}/bin}"
-# shellcheck disable=SC2295
 test "${PATH#${HOME}/bin:*}" = "${PATH}" && PATH="${HOME}/bin:${PATH}"
 
 GOPATH="${HOME}/src/go"
 if [ -d "${GOPATH}" ]; then
 	IFS=':'
-	# shellcheck disable=SC2086
 	set -- ${GOPATH}
 	unset IFS GOPATH
-	# shellcheck disable=SC2048
 	for i in ${*}; do
 		test -d "${i}" && GOPATH="${GOPATH:+${GOPATH}:}${i}"
 		test -d "${i}/bin" && PATH="${PATH:+${PATH}:}${i}/bin"
@@ -49,17 +45,14 @@ PS1="${USER}@\\h:\\w \\$ "
 case "${OSTYPE}" in
 	freebsd*)
 		unset ip
-		# shellcheck disable=SC2046
 		set -- $(ifconfig bridge0 2>/dev/null)
 		if [ "${ip:=${*}}" != "${ip##* inet }" ]; then ip="${ip##* inet }"; else unset ip; fi
 		if [ "${ip}" != "${ip%% netmask *}" ]; then ip="${ip%% netmask *}"; else unset ip; fi
-		# shellcheck disable=SC2046
 		if [ -z "${ip}" ] && set -- $(ifconfig -l ether 2>/dev/null) && [ -n "${1}" ] && set -- $(ifconfig "${1}" 2>/dev/null); then
 			if [ "${ip:=${*}}" != "${ip##* inet }" ]; then ip="${ip##* inet }"; else unset ip; fi
 			if [ "${ip}" != "${ip%% netmask *}" ]; then ip="${ip%% netmask *}"; else unset ip; fi
 		fi
 		IFS='.'
-		# shellcheck disable=SC2086
 		set -- ${ip} && test -n "${4}" && export DOCKER_HOST="tcp://${1}${IFS}${2}${IFS}${3}${IFS}7:2375"
 		unset IFS ip
 
@@ -73,7 +66,6 @@ case "${OSTYPE}" in
 esac
 
 if [ -n "${BASH}" ]; then
-	# shellcheck disable=SC1090
 	test -s "${BASH_ENV:=${HOME}/.bashrc}" && export BASH_ENV && . "${BASH_ENV}"
 else
 	export ENV="${HOME}/.shrc"

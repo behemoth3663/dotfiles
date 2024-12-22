@@ -1,4 +1,3 @@
-# shellcheck disable=SC2148
 # $FreeBSD: src/share/skel/dot.shrc,v 1.2 1999/08/28 00:21:54 peter Exp $
 #
 # .shrc - bourne shell startup file
@@ -52,13 +51,11 @@ case "${OSTYPE}" in
 		GROOVY_HOME="${PREFIX}/opt/groovy/libexec"
 		test -x "${GROOVY_HOME}/bin/groovy" && export GROOVY_HOME
 
-		# shellcheck disable=SC2139
 		alias cdd="cd ${HOME}/src"
 		alias k='/opt/homebrew/bin/kubectl'
 		alias ldd='/usr/bin/otool -L'
 		alias make='/opt/homebrew/bin/bmake'
 		alias t='/opt/homebrew/bin/terraform'
-		# shellcheck disable=SC2142,SC2154
 		alias ips='networksetup -listallhardwareports | while read -r s; do
 			ss="${s#* Port: }"
 			test "${s}" = "${ss}" || ! name="${ss% Adapter *}" || continue
@@ -79,55 +76,43 @@ case "${OSTYPE}" in
 		done'
 		;;
 	linux*)
-		PREFIX='/home/linuxbrew/.linuxbrew'
+		# PREFIX='/home/linuxbrew/.linuxbrew'
+		PREFIX='/usr'
 		GIT='/usr/bin/git'
 		CURL='/usr/bin/curl'
 
 		alias doas='/usr/bin/sudo'
 		alias sd='/usr/bin/sudo /usr/bin/mc'
+		unalias ll
 		;;
 	*) # freebsd including /bin/sh is run
 		PREFIX='/usr/local'
 		GIT="${PREFIX}/bin/git"
 		CURL="${PREFIX}/bin/curl"
 
-		# shellcheck disable=SC2139
 		test -x "${PREFIX}/bin/doas" && alias sudo="${PREFIX}/bin/doas"
 
-		# shellcheck disable=SC2139
 		alias cdd="cd /usr${HOME}/src"
-		# shellcheck disable=SC2139
 		test -d "/usr${HOME}/src" || alias cdd="cd ${HOME}/src"
 
 		alias ss='/usr/bin/sockstat'
-		# shellcheck disable=SC2139
 		alias sd="sudo ${PREFIX}/bin/deco"
-		# shellcheck disable=SC2139
 		alias t="${PREFIX}/bin/terraform"
 		alias k='kubectl'
 
-		# shellcheck disable=SC2139
 		alias pkg_ver="${PREFIX}/sbin/pkg-static version -vL= | /usr/bin/grep --extended-regex --invert-match '[[:space:]]>[[:space:]]|[[:space:]]orphaned[:[:space:]]+local/' | /usr/bin/less --no-init --quit-if-one-screen"
-		# shellcheck disable=SC2139
 		alias pkg_vers="${PREFIX}/sbin/pkg-static version -vL= | /usr/bin/less --no-init --quit-if-one-screen"
-		# shellcheck disable=SC2139
 		alias portver="portsnap fetch update && ${PREFIX}/sbin/pkg-static version -vL= | /usr/bin/grep --extended-regex --invert-match '[[:space:]]>[[:space:]]|[[:space:]]orphaned[:[:space:]]+local/'"
-		# shellcheck disable=SC2139
 		alias portupg="time /usr/bin/nice -n32 ${PREFIX}/sbin/portmaster --no-confirm --no-term-title -Bdgty -x doas -x sudo"
 		alias pkgupg="time /usr/bin/nice -n32 ${PREFIX}/sbin/portmaster --no-confirm --no-term-title -Bdty --packages-only --packages-local --local-packagedir=$(make -C / -V PORTSDIR)/packages -x pkg -x doas -x sudo"
 
-		# shellcheck disable=SC2154,SC2139
 		alias port_extract='test "${PWD##/usr/ports/*/}" != "${PWD}" && /bin/rm -rf -- Makefile.local && pkg_origin=$(/usr/bin/make -V PKGORIGIN) && test -n "${pkg_origin}" && pkg_pwd="${PWD}" && cd .. && '"${PREFIX}"'/bin/doas /bin/rm -rf -- "${pkg_pwd##*/}" && portsnap extract "${pkg_origin}/" && cd "${pkg_pwd}"'
 
 		alias mkadl='/usr/bin/nice -n32 /usr/bin/make all-depends-list'
-		# shellcheck disable=SC2139
 		alias mkcfg="${PREFIX}/bin/doas /usr/bin/make config"
-		# shellcheck disable=SC2139
 		alias mkcfgr="/usr/bin/nice -n32 ${PREFIX}/bin/doas /usr/bin/make config-recursive"
 		#alias mkcal="{ WRKDIR=\$(/usr/bin/make -V WRKDIR) && test -d \"\${WRKDIR}\" && /usr/bin/nice -n32 ${PREFIX}/bin/doas /usr/bin/find \"\${WRKDIR}\" -mindepth 2 -maxdepth 2 -name '.*' -uid 0 -exec /usr/sbin/chown -v \$(/usr/bin/id -u) {} \+ && /usr/bin/nice -n32 ${PREFIX}/bin/doas /bin/rm -rf -- \"\${WRKDIR}/pkg\" \"\${WRKDIR}/.metadir\"; set -o pipefail && /usr/bin/time /usr/bin/nice -n32 /usr/bin/make clean all 2>&1 | /usr/bin/tee build.log; }"
-		# shellcheck disable=SC2139
 		alias mkcal="${PREFIX}/bin/doas /usr/bin/make clean && set -o pipefail && /usr/bin/time /usr/bin/nice -n32 /usr/bin/make all 2>&1 | /usr/bin/tee build.log"
-		# shellcheck disable=SC2139
 		alias instpc="/usr/bin/nice -n32 ${PREFIX}/bin/doas /usr/bin/make package deinstall install clean"
 		alias zfsget='/sbin/zfs get mountpoint,canmount,mounted,checksum,compression,compressratio,dedup,atime,devices,exec,setuid,xattr,readonly,primarycache,secondarycache,logbias,sync,volsize,volblocksize'
 		alias kldsize='echo $(($(kldstat | sed -rn "s/^[[:space:]]*[[:digit:]].*[[:space:]]([[:xdigit:]]+)[[:space:]]+[^[:space:]]+[[:space:]]*\$/+0x\1/p")))'
@@ -143,7 +128,6 @@ case "${OSTYPE}" in
 		#alias hast1="${PREFIX}/bin/doas /sbin/hastctl status -c /etc/hast1.conf"
 		#alias hast2="${PREFIX}/bin/doas /sbin/hastctl status -c /etc/hast2.conf"
 		#if [ -n "${BASH}" ] && [ -x /usr/local/bin/starship ]; then
-		#	# shellcheck disable=SC1090
 		#	source <(/usr/local/bin/starship init bash --print-full-init)
 		#fi
 		;;
@@ -151,75 +135,45 @@ esac
 
 alias m='/usr/bin/less --no-init --chop-long-lines --RAW-CONTROL-CHARS'
 if [ -x "${PREFIX}/bin/bat" ]; then
-	# shellcheck disable=SC2139
 	alias m="${PREFIX}/bin/bat --pager '/usr/bin/less --no-init --chop-long-lines --RAW-CONTROL-CHARS' --color=always --theme=ansi --plain --wrap never"
-	# shellcheck disable=SC2139
 	alias cat="${PREFIX}/bin/bat --pager '/usr/bin/less --no-init --chop-long-lines --RAW-CONTROL-CHARS --quit-if-one-screen' --theme=ansi --plain"
 fi
 
-# shellcheck disable=SC2139
-#test -x "${PREFIX}/bin/exa" && alias l="${PREFIX}/bin/exa --long --group-directories-first --bytes" || alias l='/bin/ls -lGp'
 test -x "${PREFIX}/bin/eza" && alias l="${PREFIX}/bin/eza --long --group-directories-first --bytes" || alias l='/bin/ls -lGp'
 
-# shellcheck disable=SC2139
 alias tmux="${PREFIX}/bin/tmux attach || ${PREFIX}/bin/tmux new"
-# shellcheck disable=SC2139
 alias weather="${CURL} http://wttr.in/Vyshhorod"
 
-# shellcheck disable=SC2139
 alias giadd="${GIT} add"
-# shellcheck disable=SC2139
 alias gibra="${GIT} branch --show-current"
-# shellcheck disable=SC2139
 alias gibras="/usr/bin/env GIT_PAGER='${GIT_PAGER:-${PAGER:-/usr/bin/less}} --quit-if-one-screen' ${GIT} branch --verbose --all"
-# shellcheck disable=SC2139
 alias giche="${GIT} checkout"
-# shellcheck disable=SC2139
-#alias gichem="${GIT}"' checkout $('"${GIT}"' branch | sed -r -e "/^[[:space:]*]+(main|master)$/!d" -e "s/^[[:space:]*]+//" -eq)'
 alias gichem="${GIT}"' checkout $('"${GIT}"' --no-pager branch --no-color --list main master | sed -rn "s/^\*?[[:space:]]+//p;q")'
-# shellcheck disable=SC2139
 alias gicam="${GIT} commit --verbose --all --message"
-# shellcheck disable=SC2139
 alias gigog="${GIT}"' log --graph --abbrev-commit --decorate --all --format=format:"%C(bold blue)%H%C(reset) - %C(bold cyan)%aD%C(dim white) - %an%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n %C(white)%s%C(reset)"'
-# shellcheck disable=SC2139
 alias gilog="${GIT}"' log --graph --pretty=format:"%C(bold blue)%h %C(dim cyan)%ai %C(bold green)%ae%C(reset) %s %C(dim yellow)%d"'
 #alias gilog='${GIT} log --graph --pretty=format:"%C(bold blue)%h%C(dim white) [%C(bold cyan)%ai%C(dim white)] <%C(bold green)%ae%C(dim white)>%C(reset) %s"'
 #alias gilog='${GIT} log --graph --pretty=format:"%h [%ai] <%ae> %s"'
 #log --graph --pretty=format:'%Cred%h %C(green)%t %Creset %C(red)%ad %Creset-%C(yellow)%d%Creset %s %n      %N %-GG' --date=short
-# shellcheck disable=SC2139
 alias gils="${GIT} ls-files"
-# shellcheck disable=SC2139
 alias girebi="${GIT} rebase -i"
-# shellcheck disable=SC2139
 alias girebi2="${GIT} rebase -i HEAD~2"
 #git switch main && git pull --prune && git switch - && git -c rebase.autoStash=true rebase main
 alias gireup="${GIT} fetch origin && ${GIT}"' -c rebase.autoStash=true rebase origin/$('"${GIT}"' --no-pager branch --no-color --list main master | sed -rn "s/^\*?[[:space:]]+//p;q")'
-# shellcheck disable=SC2139
 alias gista="${GIT} status --short --branch --untracked-files=no"
-# shellcheck disable=SC2139
 alias gdiff="${GIT} diff"
-# shellcheck disable=SC2139
 alias gfetch="${GIT}"' checkout $('"${GIT}"' --no-pager branch --no-color --list main master | sed -rn "s/^\*?[[:space:]]+//p;q")'" && ${GIT} fetch --all --append --prune && ${GIT} pull --all"
-# shellcheck disable=SC2139
 alias gpull="${GIT} pull --verbose --all"
-# shellcheck disable=SC2139
 alias gpush="${GIT} push --verbose --all --set-upstream --follow-tags origin"
-# shellcheck disable=SC2139
 alias gpushtag="${GIT} push --verbose --tags origin"
-# shellcheck disable=SC2139
 alias gpullbra="${GIT}"' pull --verbose origin $('"${GIT}"' branch --show-current)'
-# shellcheck disable=SC2139
 alias gpushbra="${GIT}"' push --verbose --set-upstream origin $('"${GIT}"' branch --show-current)'
-# shellcheck disable=SC2139
 alias girem="${GIT} remote --verbose"
-# shellcheck disable=SC2139
 alias giremshow="${GIT} remote --verbose show origin"
-# shellcheck disable=SC2139
 alias gitags="${GIT} ls-remote --tags origin"
 
 md() {
 	test -n "${1}" || ! echo "${PWD}" || return 1
-	# shellcheck disable=SC2164
 	/bin/mkdir -p -- ${@} && cd -- "${1}"
 }
 
@@ -277,7 +231,6 @@ gibradel() {
 
 gicd() {
 	local d
-	# shellcheck disable=SC2164
 	d=$(git rev-parse --show-toplevel) && cd -- "${d}"
 }
 
@@ -285,13 +238,11 @@ pkg_ls_bin() {
 	# можно дополнить автоматическим определением директории порта по /usr/ports/* при пустом ${1}
 	local p pkgs pkg_name
 	if [ -z "${1}" ]; then
-		# shellcheck disable=SC2295
 		if [ "${PWD#$(make -V PORTSDIR)/}" = "${PWD}" ]; then
 			echo "Package name cannot be found (rc=201)." >&2
 			return 201
 		fi
 
-		# shellcheck disable=SC2016
 		pkg_name=$(make -v '${PKGNAMEPREFIX}${PORTNAME}${PKGNAMESUFFIX}')
 		if [ -z "${pkg_name}" ]; then
 			echo "Package name cannot be found (rc=202)." >&2
@@ -299,7 +250,6 @@ pkg_ls_bin() {
 		fi
 	fi
 
-	# shellcheck disable=SC2048
 	for p in ${*:-${pkg_name}}; do
 		p=$("${PREFIX}/sbin/pkg-static" query --evaluate "%n ~ *${p}*" '%n') &&
 			test -n "${p}" && pkgs="${pkgs} ${p}"
@@ -309,7 +259,6 @@ pkg_ls_bin() {
 		return 203
 	fi
 
-	# shellcheck disable=SC2086
 	pkgs=$("${PREFIX}/sbin/pkg-static" query '%Fp' ${pkgs} |
 		/usr/bin/xargs /usr/bin/file |
 		/usr/bin/sed -rn 's/([^:]+):[[:space:]]+ELF[[:space:]].*/\1/p')
@@ -318,24 +267,20 @@ pkg_ls_bin() {
 		return 204
 	fi
 
-	# shellcheck disable=SC2086
 	/usr/bin/env LC_TIME='en_US.UTF-8' /bin/ls -lSG ${pkgs}
 }
 
 ll() {
 	if [ -x "${PREFIX}/bin/eza" ]; then
-		# shellcheck disable=SC2048,SC2086
-		"${PREFIX}/bin/eza" --all --long --group-directories-first --bytes --links --group --time-style long-iso --color always ${*} |
+		"${PREFIX}/bin/eza" --all --long --group-directories-first --bytes --links --group --time-style long-iso --color always ${@} |
 			/usr/bin/less --no-init --chop-long-lines --RAW-CONTROL-CHARS --quit-if-one-screen
 	else
-		# shellcheck disable=SC2048,SC2086
-		/bin/ls -laGTop ${*}
+		/bin/ls -laGop --color=always ${@}
 	fi
 }
 
 i() {
-	# shellcheck disable=SC2048,SC2086
-	/usr/bin/grep --extended-regexp --ignore-case --color=always ${*} |
+	/usr/bin/grep --extended-regexp --ignore-case --color=always ${@} |
 		/usr/bin/less --no-init --chop-long-lines --RAW-CONTROL-CHARS --quit-if-one-screen
 }
 
@@ -415,7 +360,6 @@ getags() {
 		git --no-pager tag --no-color --contains "${hash}" --sort version:refname | grep '^v[[:digit:]][[:digit:].]*$' | head -1
 	done | uniq
 }
-
 
 unset CURL
 
