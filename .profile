@@ -53,7 +53,7 @@ case "${OSTYPE}" in
 			if [ "${ip}" != "${ip%% netmask *}" ]; then ip="${ip%% netmask *}"; else unset ip; fi
 		fi
 		IFS='.'
-		set -- ${ip} && test -n "${4}" && export DOCKER_HOST="tcp://${1}${IFS}${2}${IFS}${3}${IFS}7:2375"
+		set -- ${ip} && test -n "${4}" && export DOCKER_HOST="tcp://${1}${IFS}${2}${IFS}${3}${IFS}9:2375"
 		unset IFS ip
 
 		test -x "${EDITOR:=/usr/local/bin/mcedit}" || EDITOR='/usr/bin/ee'
