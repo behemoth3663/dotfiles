@@ -102,7 +102,8 @@ case "${OSTYPE}" in
 
 		alias pkg_ver="${PREFIX}/sbin/pkg-static version -vL= | /usr/bin/grep --extended-regex --invert-match '[[:space:]]>[[:space:]]|[[:space:]]orphaned[:[:space:]]+local/' | /usr/bin/less --no-init --quit-if-one-screen"
 		alias pkg_vers="${PREFIX}/sbin/pkg-static version -vL= | /usr/bin/less --no-init --quit-if-one-screen"
-		alias portver="portsnap fetch update && ${PREFIX}/sbin/pkg-static version -vL= | /usr/bin/grep --extended-regex --invert-match '[[:space:]]>[[:space:]]|[[:space:]]orphaned[:[:space:]]+local/'"
+#		alias portver="portsnap fetch update && test -x ${HOME}/bin/update_index.pl && ${HOME}/bin/update_index.pl devel/readline \$(${PREFIX}/sbin/pkg-static query --evaluate '%o ~ local/*' %o) && ${PREFIX}/sbin/pkg-static version --verbose --not-like = | /usr/bin/grep --extended-regex --invert-match '[[:space:]]>[[:space:]]|[[:space:]]orphaned[:[:space:]]+local/'"
+		alias portver="portsnap fetch update && test -x ${HOME}/bin/update_index.pl && ${HOME}/bin/update_index.pl devel/readline && ${PREFIX}/sbin/pkg-static version --verbose --not-like = | /usr/bin/grep --extended-regex --invert-match '[[:space:]]>[[:space:]]|[[:space:]]orphaned[:[:space:]]+local/'"
 		alias portupg="time /usr/bin/nice -n32 ${PREFIX}/sbin/portmaster --no-confirm --no-term-title -Bdgty -x doas -x sudo"
 		alias pkgupg="time /usr/bin/nice -n32 ${PREFIX}/sbin/portmaster --no-confirm --no-term-title -Bdty --packages-only --packages-local --local-packagedir=$(make -C / -V PORTSDIR)/packages -x pkg -x doas -x sudo"
 
