@@ -3,7 +3,7 @@ test -n "${O1VM_SUPRESS_SHRC_LOGGING}" || echo '.bashrc' >&2
 HISTSIZE='100000'
 HISTFILESIZE='1000000'
 HISTCONTROL='ignoreboth:erasedups'
-HISTIGNORE='history:exit:logout:cd:pwd:man:l[ls]:l:doas shutdown*:sudo shutdown*:sd:deco:mc:startx:kldstat:kldsize:portver:portupg -a:doas pkg check -d'
+HISTIGNORE='history:exit:logout:cd:pwd:man:l[ls]:l:doas shutdown*:sd:deco:mc:startx:kldstat:kldsize:portver:portupg -a:doas pkg check -d*'
 
 # https://www.opennet.ru/base/sys/bash_tips.txt.html
 shopt -s histappend

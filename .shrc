@@ -103,9 +103,10 @@ case "${OSTYPE}" in
 		alias pkg_ver="${PREFIX}/sbin/pkg-static version -vL= | /usr/bin/grep --extended-regex --invert-match '[[:space:]]>[[:space:]]|[[:space:]]orphaned[:[:space:]]+local/' | /usr/bin/less --no-init --quit-if-one-screen"
 		alias pkg_vers="${PREFIX}/sbin/pkg-static version -vL= | /usr/bin/less --no-init --quit-if-one-screen"
 #		alias portver="portsnap fetch update && test -x ${HOME}/bin/update_index.pl && ${HOME}/bin/update_index.pl devel/readline \$(${PREFIX}/sbin/pkg-static query --evaluate '%o ~ local/*' %o) && ${PREFIX}/sbin/pkg-static version --verbose --not-like = | /usr/bin/grep --extended-regex --invert-match '[[:space:]]>[[:space:]]|[[:space:]]orphaned[:[:space:]]+local/'"
-		alias portver="portsnap fetch update && test -x ${HOME}/bin/update_index.pl && ${HOME}/bin/update_index.pl devel/readline && ${PREFIX}/sbin/pkg-static version --verbose --not-like = | /usr/bin/grep --extended-regex --invert-match '[[:space:]]>[[:space:]]|[[:space:]]orphaned[:[:space:]]+local/'"
-		alias portupg="time /usr/bin/nice -n32 ${PREFIX}/sbin/portmaster --no-confirm --no-term-title -Bdgty -x doas -x sudo"
-		alias pkgupg="time /usr/bin/nice -n32 ${PREFIX}/sbin/portmaster --no-confirm --no-term-title -Bdty --packages-only --packages-local --local-packagedir=$(make -C / -V PORTSDIR)/packages -x pkg -x doas -x sudo"
+#		alias portver="/usr/bin/time -h -- portsnap fetch update && test -x ${HOME}/bin/update_index.pl && /usr/bin/time -h -- ${HOME}/bin/update_index.pl devel/readline && ${PREFIX}/sbin/pkg-static version --verbose --not-like = | /usr/bin/grep --invert-match --regexp '[[:space:]]>[[:space:]]' --regexp '[[:space:]]orphaned:[[:space:]]local/'"
+		alias portver='/usr/bin/time -h -- ${HOME}/bin/port_version.sh'
+		alias portupg="time /usr/bin/nice -n32 ${PREFIX}/sbin/portmaster --no-confirm --no-term-title -Bdgty -x doas -x sudo -x pkg"
+		alias pkgupg="time /usr/bin/nice -n32 ${PREFIX}/sbin/portmaster --no-confirm --no-term-title -Bdty --packages-only --packages-local --local-packagedir=$(make -C / -V PORTSDIR)/packages -x pkg -x doas -x sudo -x pkg"
 
 		alias port_extract='test "${PWD##/usr/ports/*/}" != "${PWD}" && /bin/rm -rf -- Makefile.local && pkg_origin=$(/usr/bin/make -V PKGORIGIN) && test -n "${pkg_origin}" && pkg_pwd="${PWD}" && cd .. && '"${PREFIX}"'/bin/doas /bin/rm -rf -- "${pkg_pwd##*/}" && portsnap extract "${pkg_origin}/" && cd "${pkg_pwd}"'
 
