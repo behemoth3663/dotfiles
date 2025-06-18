@@ -44,24 +44,13 @@ PS1="${USER}@\\h:\\w \\$ "
 
 case "${OSTYPE}" in
 	freebsd*)
-		unset ip
-		set -- $(ifconfig bridge0 2>/dev/null)
-		if [ "${ip:=${*}}" != "${ip##* inet }" ]; then ip="${ip##* inet }"; else unset ip; fi
-		if [ "${ip}" != "${ip%% netmask *}" ]; then ip="${ip%% netmask *}"; else unset ip; fi
-		if [ -z "${ip}" ] && set -- $(ifconfig -l ether 2>/dev/null) && [ -n "${1}" ] && set -- $(ifconfig "${1}" 2>/dev/null); then
-			if [ "${ip:=${*}}" != "${ip##* inet }" ]; then ip="${ip##* inet }"; else unset ip; fi
-			if [ "${ip}" != "${ip%% netmask *}" ]; then ip="${ip%% netmask *}"; else unset ip; fi
-		fi
-		IFS='.'
-		set -- ${ip} && test -n "${4}" && export DOCKER_HOST="tcp://${1}${IFS}${2}${IFS}${3}${IFS}9:2375"
-		unset IFS ip
-
 		test -x "${EDITOR:=/usr/local/bin/mcedit}" || EDITOR='/usr/bin/ee'
 		export EDITOR
 
 		test -S "/var/run/${USER}/agent.sock" && export SSH_AUTH_SOCK="/var/run/${USER}/agent.sock"
 		test -s "${HOME}/.pythonstartup" && export PYTHONSTARTUP="${HOME}/.pythonstartup"
 		test -z "${TMUX}" || export COLORTERM='rxvt'
+		export DOCKER_HOST='tcp://198.19.255.9:2375'
 		;;
 esac
 
