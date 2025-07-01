@@ -83,7 +83,7 @@ case "${OSTYPE}" in
 
 		alias doas='/usr/bin/sudo'
 		alias sd='/usr/bin/sudo /usr/bin/mc'
-		unalias ll
+		unalias ll 2>/dev/null
 		;;
 	*) # freebsd including /bin/sh is run
 		PREFIX='/usr/local'
