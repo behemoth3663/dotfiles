@@ -347,7 +347,7 @@ gfixup() {
 
 getag() {
 	local main_branch hash
-	main_branch="$(git --no-pager branch --no-color --list main master | sed -rn 's/^\*?[[:space:]]+//p;q')"
+	main_branch="$(git --no-pager branch --no-color --list main master | sed -rn 's/^\*?[[:blank:]]+//p;q')"
 	test -n "${main_branch}" || return 201
 
 	hash=$(git --no-pager log --no-color --max-count=1 --pretty=%h "${main_branch}" -- "${1:-.}") || return 202 # git --no-pager log --no-color --max-count=1 --pretty=%h --invert-grep --extended-regexp --grep='\[(ci[[:space:]]+skip|skip[[:space:]]+ci)\]' "${main_branch}" -- "${1:-.}"
@@ -358,7 +358,7 @@ getag() {
 
 getags() {
 	local main_branch hash
-	main_branch="$(git --no-pager branch --no-color --list main master | sed -rn 's/^\*?[[:space:]]+//p;q')"
+	main_branch="$(git --no-pager branch --no-color --list main master | sed -rn 's/^\*?[[:blank:]]+//p;q')"
 	test -n "${main_branch}" || return 201
 
 	git --no-pager log --no-color --pretty=%h "${main_branch}" -- "${1:-.}" | while read -r hash; do
@@ -367,21 +367,3 @@ getags() {
 }
 
 unset CURL
-
-#git log --name-only?
-#portver() {
-#	local o origins old_pwd="${PWD}"
-#	cd /usr/ports || return 1
-#	origins=$(${GIT} pull origin main | /usr/bin/sed -rn 's,^[[:space:]]+([^[:space:]/]+/[^[:space:]/]+).*,\1,p' | /usr/bin/sort -u) || return 2 #'
-#	if [ -s "$(/usr/bin/make -V INDEXDIR)/$(/usr/bin/make -V INDEXFILE)" ]; then
-#		for o in ${origins}; do
-#			test "_$(${PREFIX}/sbin/pkg-static query -e "%o = ${o}" '%k')" = '_0' || continue
-#			/usr/bin/make index || return 3
-#			break
-#		done
-#	else
-#		/usr/bin/make index || return 3
-#	fi
-#	${PREFIX}/sbin/pkg-static version -vL= | /usr/bin/grep -Ev '[[:space:]]>[[:space:]]|[[:space:]]orphaned[:[:space:]]+local/'
-#	cd "${old_pwd}"
-#}
