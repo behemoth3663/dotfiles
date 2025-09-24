@@ -19,13 +19,6 @@ YELLOW="\[\033[1;33m\]"
 BLUE="\[\033[1;34m\]"
 CYAN="\[\033[1;36m\]"
 
-_get_current_git_branch() {
-	local s
-	s=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
-	test "_${s}" = _HEAD && s=$(git rev-parse --short HEAD 2>/dev/null)
-	test -z "${s}" || echo " ${s} "
-}
-
 #NO_COLOR_PS1=
 PS1_TAIL_COLOR="${YELLOW}"
 if [ -n "${SSH_CLIENT}" ] || [ -n "${SSH_TTY}" ]; then
@@ -35,8 +28,19 @@ if [ -n "${SSH_CLIENT}" ] || [ -n "${SSH_TTY}" ]; then
 fi
 
 #PS1="${RESET}\u${PS1_HOST}${CYAN}:${RESET}\w${PS1_TAIL_COLOR}>${RESET} "
-PS1="${RESET}\u${PS1_HOST}${CYAN}:${RESET}${BOLD}\w${RESET}\$(${HOME}/bin/gitbrash)${PS1_TAIL_COLOR}>${RESET} "
-test -x "${HOME}/bin/gitbrash" || PS1="${RESET}\u${PS1_HOST}${CYAN}:${RESET}${BOLD}\w${RESET}\$(_get_current_git_branch)${PS1_TAIL_COLOR}>${RESET} "
+if [ -x /usr/local/bin/gibrash ]; then
+	PS1="${RESET}\u${PS1_HOST}${CYAN}:${RESET}${BOLD}\w${RESET}\$(/usr/local/bin/gibrash)${PS1_TAIL_COLOR}>${RESET} "
+elif [ -x /usr/bin/gibrash ]; then
+	PS1="${RESET}\u${PS1_HOST}${CYAN}:${RESET}${BOLD}\w${RESET}\$(/usr/bin/gibrash)${PS1_TAIL_COLOR}>${RESET} "
+else
+_get_current_git_branch() {
+	local s
+	s=$(git --no-pager rev-parse --abbrev-ref HEAD 2>/dev/null)
+	test "_${s}" = _HEAD && s=$(git --no-pager rev-parse --short HEAD 2>/dev/null)
+	test -z "${s}" || echo " ${s} "
+}
+	PS1="${RESET}\u${PS1_HOST}${CYAN}:${RESET}${BOLD}\w${RESET}\$(_get_current_git_branch)${PS1_TAIL_COLOR}>${RESET} "
+fi
 test -z "${NO_COLOR_PS1}" || PS1="\u${PS1_HOST}:\w> "
 
 if [ "${UID}" -eq 0 ]; then
