@@ -109,7 +109,7 @@ case "${OSTYPE}" in
 		alias portupg="time /usr/bin/nice -n32 ${PREFIX}/sbin/portmaster --no-confirm --no-term-title -Bdgty -x doas \$(${PREFIX}/sbin/pkg-static query --evaluate '%k == 1' -- '-x %n')"
 		alias pkgupg="time /usr/bin/nice -n32 ${PREFIX}/sbin/portmaster --no-confirm --no-term-title -Bdty --packages-only --packages-local --local-packagedir=$(make -C / -V PORTSDIR)/packages -x doas -x pkg \$(${PREFIX}/sbin/pkg-static query --evaluate '%k == 1' -- '-x %n')"
 
-		alias port_extract='test "${PWD##/usr/ports/*/}" != "${PWD}" && /bin/rm -rf -- Makefile.local && pkg_origin=$(/usr/bin/make -V PKGORIGIN) && test -n "${pkg_origin}" && pkg_pwd="${PWD}" && cd .. && '"${PREFIX}"'/bin/doas /bin/rm -rf -- "${pkg_pwd##*/}" && portsnap extract "${pkg_origin}/" && cd "${pkg_pwd}"'
+		#alias port_extract='test "${PWD##/usr/ports/*/}" != "${PWD}" && /bin/rm -rf -- Makefile.local && pkg_origin=$(/usr/bin/make -V PKGORIGIN) && test -n "${pkg_origin}" && pkg_pwd="${PWD}" && cd .. && '"${PREFIX}"'/bin/doas /bin/rm -rf -- "${pkg_pwd##*/}" && portsnap extract "${pkg_origin}/" && cd "${pkg_pwd}"'
 
 		alias mkadl='/usr/bin/nice -n32 /usr/bin/make all-depends-list'
 		alias mkcfg="${PREFIX}/bin/doas /usr/bin/make config"
@@ -127,8 +127,10 @@ case "${OSTYPE}" in
 		alias pip_upgrade="test -z \"\${VIRTUAL_ENV}\" || pip list --outdated --format=freeze | sed -rn -e '/^(-e|evdev|spyder|isort|lazy-object-proxy)/d' -e 's/=.*//p' | xargs pip install --upgrade"
 		alias pip_upgrade_list="test -z \"\${VIRTUAL_ENV}\" || pip list --outdated --format=freeze | sed -rn -e '/^-e/d'"
 
-		alias ghce='gh copilot explain'
-		alias ghcs='gh copilot suggest -t shell'
+		#alias ghce='gh copilot explain'
+		#alias ghcs='gh copilot suggest -t shell'
+
+		test -x "${PREFIX}/bin/fzf" && alias hh="history | ${PREFIX}/bin/fzf"
 
 		#alias jmail="${PREFIX}/bin/doas /usr/sbin/jexec mail /usr/bin/su -l ${USER}"
 		#alias hast1="${PREFIX}/bin/doas /sbin/hastctl status -c /etc/hast1.conf"
