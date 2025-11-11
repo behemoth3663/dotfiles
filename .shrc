@@ -101,11 +101,8 @@ case "${OSTYPE}" in
 		alias t="${PREFIX}/bin/terraform"
 		alias k='kubectl'
 
-		alias pkg_ver="${PREFIX}/sbin/pkg-static version -vL= | /usr/bin/grep --extended-regex --invert-match '[[:space:]]>[[:space:]]|[[:space:]]orphaned[:[:space:]]+local/' | /usr/bin/less --no-init --quit-if-one-screen"
+		alias pkg_ver="${PREFIX}/sbin/pkg-static version -vL= | /usr/bin/grep --extended-regex --invert-match '[[:blank:]]>[[:blank:]]|[[:blank:]]orphaned[:[:blank:]]+local/' | /usr/bin/less --no-init --quit-if-one-screen"
 		alias pkg_vers="${PREFIX}/sbin/pkg-static version -vL= | /usr/bin/less --no-init --quit-if-one-screen"
-#		alias portver="portsnap fetch update && test -x ${HOME}/bin/update_index.pl && ${HOME}/bin/update_index.pl devel/readline \$(${PREFIX}/sbin/pkg-static query --evaluate '%o ~ local/*' %o) && ${PREFIX}/sbin/pkg-static version --verbose --not-like = | /usr/bin/grep --extended-regex --invert-match '[[:space:]]>[[:space:]]|[[:space:]]orphaned[:[:space:]]+local/'"
-#		alias portver="/usr/bin/time -h -- portsnap fetch update && test -x ${HOME}/bin/update_index.pl && /usr/bin/time -h -- ${HOME}/bin/update_index.pl devel/readline && ${PREFIX}/sbin/pkg-static version --verbose --not-like = | /usr/bin/grep --invert-match --regexp '[[:space:]]>[[:space:]]' --regexp '[[:space:]]orphaned:[[:space:]]local/'"
-		alias portver='/usr/bin/time -h -- ${HOME}/bin/port_version.sh'
 		alias portupg="time /usr/bin/nice -n32 ${PREFIX}/sbin/portmaster --no-confirm --no-term-title -Bdgty -x doas \$(${PREFIX}/sbin/pkg-static query --evaluate '%k == 1' -- '-x %n')"
 		alias pkgupg="time /usr/bin/nice -n32 ${PREFIX}/sbin/portmaster --no-confirm --no-term-title -Bdty --packages-only --packages-local --local-packagedir=$(make -C / -V PORTSDIR)/packages -x doas -x pkg \$(${PREFIX}/sbin/pkg-static query --evaluate '%k == 1' -- '-x %n')"
 
@@ -118,7 +115,7 @@ case "${OSTYPE}" in
 		alias mkcal="${PREFIX}/bin/doas /usr/bin/make clean && set -o pipefail && /usr/bin/time /usr/bin/nice -n32 /usr/bin/make all 2>&1 | /usr/bin/tee build.log"
 		alias instpc="/usr/bin/nice -n32 ${PREFIX}/bin/doas /usr/bin/make package deinstall install clean"
 		alias zfsget='/sbin/zfs get mountpoint,canmount,mounted,checksum,compression,compressratio,dedup,atime,devices,exec,setuid,xattr,readonly,primarycache,secondarycache,logbias,sync,volsize,volblocksize'
-		alias kldsize='echo $(($(kldstat | sed -rn "s/^[[:space:]]*[[:digit:]].*[[:space:]]([[:xdigit:]]+)[[:space:]]+[^[:space:]]+[[:space:]]*\$/+0x\1/p")))'
+		alias kldsize='echo $(($(kldstat | sed -rn "s/^[[:blank:]]*[[:digit:]].*[[:blank:]]([[:xdigit:]]+)[[:blank:]]+[^[:blank:]]+[[:blank:]]*\$/+0x\1/p")))'
 		alias sh_='exec /bin/sh'
 
 		alias mk_venv='python -m venv env --system-site-packages --symlinks --prompt "\[\033[1;33m\]${PWD##*/}\[\033[0m\]" && source env/bin/activate && pip install --upgrade --quiet --progress-bar off pip setuptools'
@@ -156,7 +153,7 @@ alias giadd="${GIT} add"
 alias gibra="${GIT} branch --show-current"
 alias gibras="/usr/bin/env GIT_PAGER='${GIT_PAGER:-${PAGER:-/usr/bin/less}} --quit-if-one-screen' ${GIT} branch --verbose --all"
 alias giche="${GIT} checkout"
-alias gichem="${GIT}"' checkout $('"${GIT}"' --no-pager branch --no-color --list main master | sed -rn "s/^\*?[[:space:]]+//p;q")'
+alias gichem="${GIT}"' checkout $('"${GIT}"' --no-pager branch --no-color --list main master | sed -rn "s/^\*?[[:blank:]]+//p;q")'
 alias gicam="${GIT} commit --verbose --all --message"
 alias gigog="${GIT}"' log --graph --abbrev-commit --decorate --all --format=format:"%C(bold blue)%H%C(reset) - %C(bold cyan)%aD%C(dim white) - %an%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n %C(white)%s%C(reset)"'
 alias gilog="${GIT}"' log --graph --pretty=format:"%C(bold blue)%h %C(dim cyan)%ai %C(bold green)%ae%C(reset) %s %C(dim yellow)%d"'
@@ -167,10 +164,10 @@ alias gils="${GIT} ls-files"
 alias girebi="${GIT} rebase -i"
 alias girebi2="${GIT} rebase -i HEAD~2"
 #git switch main && git pull --prune && git switch - && git -c rebase.autoStash=true rebase main
-alias gireup="${GIT} fetch origin && ${GIT}"' -c rebase.autoStash=true rebase origin/$('"${GIT}"' --no-pager branch --no-color --list main master | sed -rn "s/^\*?[[:space:]]+//p;q")'
+alias gireup="${GIT} fetch origin && ${GIT}"' -c rebase.autoStash=true rebase origin/$('"${GIT}"' --no-pager branch --no-color --list main master | sed -rn "s/^\*?[[:blank:]]+//p;q")'
 alias gista="${GIT} status --short --branch --untracked-files=no"
 alias gdiff="${GIT} diff"
-alias gfetch="${GIT}"' checkout $('"${GIT}"' --no-pager branch --no-color --list main master | sed -rn "s/^\*?[[:space:]]+//p;q")'" && ${GIT} fetch --all --append --prune && ${GIT} pull --all"
+alias gfetch="${GIT}"' checkout $('"${GIT}"' --no-pager branch --no-color --list main master | sed -rn "s/^\*?[[:blank:]]+//p;q")'" && ${GIT} fetch --all --append --prune && ${GIT} pull --all"
 alias gpull="${GIT} pull --verbose --all"
 alias gpush="${GIT} push --verbose --all --set-upstream --follow-tags origin"
 alias gpushtag="${GIT} push --verbose --tags origin"
@@ -229,7 +226,7 @@ gibradel() {
 	while [ -n "${1}" ]; do
 		test "${1}" != "$(git branch --show-current)" ||
 			git checkout "$(
-				git --no-pager branch --no-color --list main master | sed -rn 's/^\*?[[:space:]]+//p;q'
+				git --no-pager branch --no-color --list main master | sed -rn 's/^\*?[[:blank:]]+//p;q'
 			)"
 		git branch --delete --force "${1}"
 		git push origin --delete "${1}"
@@ -269,7 +266,7 @@ pkg_ls_bin() {
 
 	pkgs=$("${PREFIX}/sbin/pkg-static" query '%Fp' ${pkgs} |
 		/usr/bin/xargs /usr/bin/file |
-		/usr/bin/sed -rn 's/([^:]+):[[:space:]]+ELF[[:space:]].*/\1/p')
+		/usr/bin/sed -rn 's/([^:]+):[[:blank:]]+ELF[[:blank:]].*/\1/p')
 	if [ -z "${pkgs}" ]; then
 		echo "Binaries within package(s) \"${*}\" not found." >&2
 		return 204
@@ -322,7 +319,7 @@ puthash() {
 		cd "${curdir}" || return 208
 		test -n "${hash}" || return 209
 
-		new_terraform_source=$(echo "${terraform_source}" | sed -rn "s|(.*\?ref=)([^[:space:]\"]+)(.*)|\1${hash}\3|p") || return 210 #"
+		new_terraform_source=$(echo "${terraform_source}" | sed -rn "s|(.*\?ref=)([^[:blank:]\"]+)(.*)|\1${hash}\3|p") || return 210 #"
 		test -n "${new_terraform_source}" || return 211
 
 		test "${terraform_source}" != "${new_terraform_source}" &&
@@ -333,7 +330,7 @@ puthash() {
 
 gfixup() {
 	local main branch_root first_commit_id
-	main=$(git --no-pager branch --no-color --list main master | sed -rn 's/^\*?[[:space:]]+//p;q')
+	main=$(git --no-pager branch --no-color --list main master | sed -rn 's/^\*?[[:blank:]]+//p;q')
 	test -n "${main}" || return 201
 
 	branch_root=$(git --no-pager merge-base HEAD "origin/${main}")
@@ -353,7 +350,7 @@ getag() {
 	main_branch="$(git --no-pager branch --no-color --list main master | sed -rn 's/^\*?[[:blank:]]+//p;q')"
 	test -n "${main_branch}" || return 201
 
-	hash=$(git --no-pager log --no-color --max-count=1 --pretty=%h "${main_branch}" -- "${1:-.}") || return 202 # git --no-pager log --no-color --max-count=1 --pretty=%h --invert-grep --extended-regexp --grep='\[(ci[[:space:]]+skip|skip[[:space:]]+ci)\]' "${main_branch}" -- "${1:-.}"
+	hash=$(git --no-pager log --no-color --max-count=1 --pretty=%h "${main_branch}" -- "${1:-.}") || return 202 # git --no-pager log --no-color --max-count=1 --pretty=%h --invert-grep --extended-regexp --grep='\[(ci[[:blank:]]+skip|skip[[:blank:]]+ci)\]' "${main_branch}" -- "${1:-.}"
 	test -n "${hash}" || return 203
 
 	git --no-pager tag --no-color --contains "${hash}" --sort version:refname | sed -r '/^v[[:digit:].]+$/!d;q'
